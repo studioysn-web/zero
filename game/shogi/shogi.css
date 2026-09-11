@@ -1,0 +1,77 @@
+/* ===============================
+   全体レイアウト
+=============================== */
+body {
+  margin: 0;
+  background-color: #000;
+  color: #fff;
+  font-family: "Meiryo", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* Canvas を中央に配置 */
+#gameContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* ゲーム画面 */
+#gameCanvas {
+  background-color: #000;
+  image-rendering: pixelated;
+  border: 2px solid #444;
+}
+
+/* ===============================
+   Canvas 外 UI（上部バー）
+=============================== */
+#topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 48px;
+  background: rgba(20,20,20,0.9);
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+#topBar .title {
+  font-size: 20px;
+  font-weight: bold;
+  flex: 1;
+}
+
+#topBar .info {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* ===============================
+   スマホ最適化
+=============================== */
+@media (max-width: 768px) {
+  #gameCanvas {
+    width: 95vw;
+    height: auto;
+  }
+
+  #topBar {
+    height: 40px;
+    padding: 0 8px;
+  }
+
+  #topBar .title {
+    font-size: 16px;
+  }
+
+  #topBar .info {
+    font-size: 12px;
+  }
+}

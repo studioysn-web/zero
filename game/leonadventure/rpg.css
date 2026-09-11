@@ -1,0 +1,82 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #111;
+  color: #fff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 8px;
+}
+
+#game-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#game-canvas {
+  background: #000;
+  image-rendering: pixelated;
+  border: 2px solid #555;
+}
+
+#ui-wrapper {
+  margin-top: 8px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.ui-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+#ui-left {
+  flex: 1;
+}
+
+#ui-center {
+  flex: 1;
+  align-items: stretch;
+}
+
+#ui-right {
+  flex: 1;
+}
+
+.dpad-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn {
+  background: #333;
+  color: #fff;
+  border: 1px solid #777;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  min-width: 48px;
+  min-height: 32px;
+}
+
+.btn:active {
+  background: #666;
+}
+
+.action {
+  width: 100%;
+}

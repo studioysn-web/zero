@@ -1,0 +1,421 @@
+[
+  {
+    "id": 1,
+    "name": "スライム",
+    "rank": 1,
+    "hp": 20,
+    "atk": 3,
+    "max": 3,
+    "gold": 8,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.3 },
+      { "type": "weapon", "id": 1, "rate": 0.08 }
+    ]
+  },
+
+  {
+    "id": 2,
+    "name": "ようがん",
+    "rank": 2,
+    "hp": 50,
+    "atk": 6,
+    "max": 3,
+    "gold": 10,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 1, "rate": 0.1 }
+    ]
+  },
+
+  {
+    "id": 3,
+    "name": "サンドマン",
+    "rank": 3,
+    "hp": 120,
+    "atk": 12,
+    "max": 2,
+    "gold": 25,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.3 },
+      { "type": "weapon", "id": 2, "rate": 0.08 }
+    ]
+  },
+
+  {
+    "id": 4,
+    "name": "ウッド",
+    "rank": 4,
+    "hp": 250,
+    "atk": 25,
+    "max": 2,
+    "gold": 60,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.3 },
+      { "type": "weapon", "id": 2, "rate": 0.08 }
+    ]
+  },
+
+  {
+    "id": 5,
+    "name": "アイスマン",
+    "rank": 5,
+    "hp": 500,
+    "atk": 50,
+    "max": 2,
+    "gold": 85,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 3, "rate": 0.08 }
+    ]
+  },
+
+  {
+    "id": 6,
+    "name": "スプロット",
+    "rank": 5,
+    "hp": 1200,
+    "atk": 125,
+    "max": 2,
+    "gold": 120,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 3, "rate": 0.08 }
+    ]
+  },
+
+  {
+    "id": 7,
+    "name": "サボテンガー",
+    "rank": 7,
+    "hp": 2000,
+    "atk": 185,
+    "max": 3,
+    "gold": 140,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 5, "rate": 0.08 }
+    ]
+  },
+
+  {
+    "id": 8,
+    "name": "マム",
+    "rank": 8,
+    "hp": 3500,
+    "atk": 315,
+    "max": 3,
+    "gold": 150,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 5, "rate": 0.08 }
+    ]
+  },
+
+  {
+    "id": 9,
+    "name": "ドラコ",
+    "rank": 9,
+    "hp": 9500,
+    "atk": 390,
+    "max": 2,
+    "gold": 300,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 6, "rate": 0.08 }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "マッドアイ",
+    "rank": 10,
+    "hp": 8000,
+    "atk": 450,
+    "max": 3,
+    "gold": 450,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 6, "rate": 0.08 }
+    ]
+  },
+
+  {
+    "id": 17,
+    "name": "タケミカヅチ・ゴースト",
+    "rank": 17,
+    "hp": 12000,
+    "atk": 350,
+    "max": 1,
+    "gold": 450,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 6, "rate": 0.08 }
+    ]
+  },  {
+    "id": 36,
+    "name": "怪盗スプロット",
+    "rank": 36,
+    "hp": 35000,
+    "atk": 320,
+    "max": 1,
+    "gold": 450,
+    "drop": [
+      { "type": "weapon", "id": 9, "rate": 1 }
+    ]
+  },
+  {
+    "id": 18,
+    "name": "USAスプロット",
+    "rank": 18,
+    "hp": 1350,
+    "atk": 25,
+    "max": 3,
+    "gold": 250,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 3, "rate": 0.08 }
+    ]
+  },
+  {
+    "id": 19,
+    "name": "ファング",
+    "rank": 19,
+    "hp": 8500,
+    "atk": 350,
+    "max": 1,
+    "gold": 500,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 8, "rate": 0.08 }
+    ]
+  },
+  {
+    "id": 20,
+    "name": "守護精霊",
+    "rank": 20,
+    "hp": 1900,
+    "atk": 80,
+    "max": 2,
+    "gold": 250,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 4, "rate": 0.08 }
+    ]
+  },
+  {
+    "id": 21,
+    "name": "土鬼",
+    "rank": 21,
+    "hp": 1000,
+    "atk": 60,
+    "max": 2,
+    "gold": 400,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 3, "rate": 0.08 }
+    ]
+  },  {
+    "id": 22,
+    "name": "猫スプロット",
+    "rank": 22,
+    "hp": 1800,
+    "atk": 70,
+    "max": 2,
+    "gold": 500,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 5, "rate": 0.08 }
+    ]
+  },  {
+    "id": 23,
+    "name": "スパイン・シャドウ",
+    "rank": 23,
+    "hp": 2000,
+    "atk": 85,
+    "max": 1,
+    "gold": 600,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 5, "rate": 0.08 }
+    ]
+  },  {
+    "id": 24,
+    "name": "ダイロン・シャドウ",
+    "rank": 24,
+    "hp": 15000,
+    "atk": 450,
+    "max": 1,
+    "gold": 1000,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 8, "rate": 0.08 }
+    ]
+  },{
+    "id": 25,
+    "name": "ジコーズ・シャドウ",
+    "rank": 25,
+    "hp": 30000,
+    "atk": 500,
+    "max": 1,
+    "gold": 1000,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 8, "rate": 0.08 }
+    ]
+  },{
+    "id": 26,
+    "name": "ドラコサン王",
+    "rank": 26,
+    "hp": 7500,
+    "atk": 230,
+    "max": 1,
+    "gold": 500,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 5, "rate": 0.08 }
+    ]
+  },{
+    "id": 27,
+    "name": "スコルピョン",
+    "rank": 27,
+    "hp": 1800,
+    "atk": 80,
+    "max": 3,
+    "gold": 150,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 4, "rate": 0.08 }
+    ]
+  },{
+    "id": 28,
+    "name": "コンベヤ",
+    "rank": 28,
+    "hp": 2000,
+    "atk": 95,
+    "max": 3,
+    "gold": 150,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 4, "rate": 0.08 }
+    ]
+  },{
+    "id": 29,
+    "name": "ブラックナイト",
+    "rank": 29,
+    "hp": 2200,
+    "atk": 98,
+    "max": 2,
+    "gold": 150,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 4, "rate": 0.08 }
+    ]
+  },{
+    "id": 30,
+    "name": "ヴォルター",
+    "rank": 30,
+    "hp": 2400,
+    "atk": 100,
+    "max": 1,
+    "gold": 150,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 4, "rate": 0.08 }
+    ]
+  },{
+    "id": 31,
+    "name": "キラーアイ",
+    "rank": 31,
+    "hp": 2700,
+    "atk": 110,
+    "max": 2,
+    "gold": 150,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 4, "rate": 0.08 }
+    ]
+  },{
+    "id": 32,
+    "name": "ファング・シャドウ",
+    "rank": 32,
+    "hp": 5000,
+    "atk": 180,
+    "max": 1,
+    "gold": 400,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 4, "rate": 0.08 }
+    ]
+  },{
+    "id": 33,
+    "name": "ファイヤー氷",
+    "rank": 33,
+    "hp": 2800,
+    "atk": 70,
+    "max": 2,
+    "gold": 400,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 4, "rate": 0.08 }
+    ]
+  },{
+    "id": 34,
+    "name": "シャドウ",
+    "rank": 34,
+    "hp": 6500,
+    "atk": 320,
+    "max": 1,
+    "gold": 400,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 8, "rate": 0.08 }
+    ]
+  },{
+    "id": 35,
+    "name": "ドラコサン・シャドウ",
+    "rank": 35,
+    "hp": 10600,
+    "atk": 365,
+    "max": 1,
+    "gold": 500,
+    "drop": [
+      { "type": "item", "id": "かいふく", "rate": 0.4 },
+      { "type": "weapon", "id": 8, "rate": 0.08 }
+    ]
+  },
+  {
+    "id": 100,
+    "name": "オオカミ",
+    "rank": 1,
+    "hp": 100,
+    "atk": 5,
+    "max": 2,
+    "gold": 8,
+    "drop": [
+      { "type": "weapon", "id": 2, "rate": 0.08 }
+    ]
+  },
+  {
+    "id": 101,
+    "name": "オオカマキリ",
+    "rank": 1,
+    "hp": 100,
+    "atk": 5,
+    "max": 1,
+    "gold": 50,
+    "drop": [
+      { "type": "weapon", "id": 2, "rate": 0.08 }
+    ]
+  },
+    {
+    "id": 102,
+    "name": "スプロット",
+    "rank": 102,
+    "hp": 12700,
+    "atk": 350,
+    "max": 2,
+    "gold": 1,
+    "drop": [
+      { "type": "weapon", "id": 9, "rate": 1 }
+    ]
+  }
+]

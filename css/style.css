@@ -1,0 +1,1271 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap');
+
+body {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  background: #ffffff;
+  color: #000;
+}
+
+/* =========================
+   メニューボタン（最前面）
+   ========================= */
+.menu-button {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.35) !important
+}
+
+.menu-button::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255,255,255,0.6) 50%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  animation: shine 3s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  20% { transform: translateX(100%) rotate(25deg); }
+  100% { transform: translateX(100%) rotate(25deg); }
+}
+.menu-button {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+
+  width: 50px !important;
+  height: 50px !important;
+
+  background: url('/img/menu_icon.png') center/cover no-repeat;
+
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+
+  display: block !important;
+  flex-shrink: 0 !important;
+
+  overflow: hidden;
+  z-index: 100;
+  line-height: 0 !important;
+
+  border: 2px solid rgba(212, 27, 27, 0.85); /* ← 白い縁 */
+  box-shadow: 0 0 6px rgba(0,0,0,0.35);     /* ← ほんのり影 */
+}
+
+/* =========================
+   タイトル
+   ========================= */
+.title-box {
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: #fff;
+  padding: 20px 40px;
+}
+
+.main-title {
+  font-size: 64px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  line-height: 1.0;
+  white-space: nowrap;
+}
+
+.signature {
+  font-size: 22px;
+  color: #c00000;
+  position: absolute;
+  right: 10px;
+  bottom: 2px;
+}
+
+/* =========================
+   スライダー
+   ========================= */
+.slider {
+  width: 80%;
+  max-width: 600px;
+  margin: 200px auto 40px auto;
+  overflow: hidden;
+  position: relative;
+  background-color: #000;
+}
+
+.slides {
+  display: flex;
+  transition: transform 0.6s;
+}
+
+.slides img {
+  width: 100%;
+  object-fit: contain;
+  background-color: #000;
+  flex-shrink: 0;
+}
+
+/* =========================
+   UPDATE BOX
+   ========================= */
+.update-box {
+  position: fixed;
+  top: 200px;
+  left: 40px;
+  width: 240px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 16px;
+  background: rgba(80, 80, 80, 0.35);
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.12);
+  z-index: 40;
+}
+
+.update-box h2 {
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.update-box li {
+  font-size: 13px;
+  color: darkblue;
+  margin-bottom: 6px;
+}
+
+.update-box .date {
+  color: #ff1493;
+}
+
+/* =========================
+   カタログレイヤー（背景透明）
+   ========================= */
+.color-layer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* =========================
+   すりガラスのカタログBOX
+   ========================= */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+
+  padding: 40px;
+  width: 90%;
+  max-width: 900px;
+  background: rgba(20,20,20,0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.25);
+
+  position: relative;
+}
+
+/* 閉じるボタン（BOXの中） */
+.close-btn {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  font-size: 48px;
+  cursor: pointer;
+  z-index: 10000;
+ font-weight: bold;
+  color: #f00773; 
+  text-shadow: 0 0 6px rgba(0,0,0,0.9); /* ← 黒影を強めに */
+}
+
+.shoot-close-btn {
+    display: none;
+    position: fixed;
+    top: 150px;
+    right: 290px;
+
+    width: 80px;       /* ← 大きさ */
+    height: 80px;
+    border-radius: 50%; /* ← 丸ボタンにする */
+    background: rgba(0,0,0,0.6); /* ← 半透明で高級感 */
+    backdrop-filter: blur(4px);
+
+    font-size: 48px;   /* ← × の大きさ */
+    font-weight: bold;
+     color: #f00773; 
+    line-height: 80px; /* ← 中央に配置 */
+    text-align: center;
+
+    cursor: pointer;
+    z-index: 99999;
+    user-select: none;
+}
+
+
+/* =========================
+   商品カード
+   ========================= */
+.item {
+  position: relative;
+  text-align: center;
+}
+
+/* ★★★ 左と右を完全に独立した「縦の塊」にする ★★★ */
+.item.two-column {
+  display: grid;
+  grid-template-columns: 260px 1fr 380px;
+  grid-template-rows: auto;
+  gap: 20px;
+}
+
+/* ★ 左側：アイコン＋タイトル＋色パネルを1つの塊にする */
+.left-col {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ★ right-col も左カラムに合流させる（これが重要） */
+.right-col {
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* ← 左寄せにする */
+}
+
+/* サムネイル */
+.thumb-wrap {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+}
+
+.main-img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sample-img {
+  width: 360px !important;
+  height: auto !important;
+  object-fit: contain !important;
+  border-radius: 5% !important; /* 必要なら */
+}
+
+.epidode-img {
+  width: 560px;
+  height: 440px;
+  border-radius: 5%;
+  object-fit: cover;
+}
+
+/* パタパタ色板（右横） */
+.color-dropdown {
+  position: absolute;
+  left: 30%;
+  top: 10px;
+  margin-left: 6px;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.color-dot-vertical {
+  width: 50px;
+  height: 12px;
+  transform: translateY(-10px);
+  opacity: 0;
+  transition: transform .25s ease, opacity .25s ease;
+  cursor: pointer;
+}
+
+.item:hover .color-dot-vertical {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.color-dot-vertical:nth-child(1) { transition-delay: 0.05s; }
+.color-dot-vertical:nth-child(2) { transition-delay: 0.10s; }
+.color-dot-vertical:nth-child(3) { transition-delay: 0.15s; }
+.color-dot-vertical:nth-child(4) { transition-delay: 0.20s; }
+.color-dot-vertical:nth-child(5) { transition-delay: 0.25s; }
+.color-dot-vertical:nth-child(6) { transition-delay: 0.30s; }
+.color-dot-vertical:nth-child(7) { transition-delay: 0.35s; }
+
+.item-name1 {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #a8f6ff;
+}
+.item-name2 {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ee7b7be0;
+}
+.item-name3 {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #8ff0afe0;
+}
+.official-footer {
+  position: fixed;
+  bottom: 12px;
+  right: 16px;
+  font-size: 12px;
+  color: #f2f2f2;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 10000;
+}
+
+/* =========================
+   ★ 右側の追加メッセージ（右カラム）
+   ========================= */
+.item.two-column .right-extra {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+
+  width: 360px;
+  min-height: 200px;
+
+  padding: 16px;
+  background: rgba(255,255,255,0.08);
+  border-left: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(4px);
+  border-radius: 8px;
+  color: #fff;
+  line-height: 1.5;
+  font-size: 16px;
+  text-align: left;
+}
+
+/* 正円ビューア（サムネイルと同じサイズ） */
+.viewer {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  margin: 0 auto;
+}
+
+/* 正円の覗き窓（thumb-wrap と同じ見た目に） */
+.viewer-frame {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 6px solid #666; /* ← これで灰色のふちが付く */
+  /* ★ グレーの円枠を復活させる */
+  background: #fff; /* ← 白背景にする */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 横長ワイド画像（比率を維持して丸に収める） */
+.viewer-wide {
+  height: 100%;        /* ← 高さを丸に合わせる */
+  width: auto;         /* ← 横幅は自動で比率維持 */
+  object-fit: cover;   /* ← はみ出しは丸で隠す */
+  transition: transform 0.35s ease;
+    padding-left: 240px;
+  padding-right: 40px;
+}
+
+.catalog-grid .right-extra {
+  width: 360px !important;
+  height: auto !important;
+}
+.viewer-arrow {
+  position: absolute;
+  top: 55%;
+  transform: translateY(-50%);
+  font-size: 30px;
+  color: #0e99b1; /* ← 矢印の色 */
+  cursor: pointer;
+  user-select: none;
+  z-index: 10;
+}
+
+.viewer-arrow.left {
+  left: 9px;   /* ← 円の内側に配置 */
+}
+
+.viewer-arrow.right {
+  right: 0px;  /* ← 円の内側に配置 */
+}
+
+/* ホバー時の高級感 */
+.viewer-arrow:hover {
+  color: #b81111;
+}
+
+.etc-message1 {
+  text-align: center;
+  font-size: 20px;
+  color: #a8f6ff;
+  font-weight:bold;
+}
+
+.grid-message1 {
+  grid-column: 1 / 4;   /* ← これで横3ブロックぶち抜き */
+  text-align: center;
+  font-size: 30px;
+  color: #a8f6ff;
+  font-weight:bold;
+}
+
+.grid-message2 {
+  grid-column: 1 / 4;   /* ← これで横3ブロックぶち抜き */
+  text-align: center;
+  font-size: 30px;
+  color: #ee7b7be0;
+  font-weight:bold;
+}
+.grid-message3 {
+  grid-column: 1 / 4;   /* ← これで横3ブロックぶち抜き */
+  text-align: center;
+  font-size: 30px;
+  color: #91f3c5e0;
+  font-weight:bold;
+}
+
+.episode-message1 {
+  text-align: left;
+  font-size: 15px;
+  color: #a8f6ff;
+  font-weight:bold;
+}
+
+.catalog-slider {
+  position: relative;
+  width: 90%;
+  max-width: 900px;
+
+  padding: 0; /* ← これが最重要 */
+
+  background: rgba(20,20,20,0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.25);
+
+  overflow: hidden;
+}
+.catalog-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;          /* ← ここが超重要 */
+  transition: transform 0.6s ease;
+}
+
+.catalog-grid.page {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+
+  flex: 0 0 100%;
+  padding: 0px; /* ← 40px → 20px に変更（最重要） */
+
+  background: none;
+  border: none;
+}
+
+.shoot-wrapper {
+    width: 700px;     /* ← ゲームより少し広い箱 */
+    margin: 0 auto;   /* ← 中央寄せ */
+    pointer-events: auto;
+    
+    padding-left: 0px;
+}
+
+#titleScreen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 720px;
+    height: 440px;
+    transform: translate(-50%, -50%);
+    z-index: 30;
+    pointer-events: none;
+}
+
+.catalog-video {
+  grid-column: 2 / 4; /* 右側2カラムぶち抜き */
+  grid-row: 2 / 4;    /* 下2行ぶち抜き（縦に巨大） */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0,0,0,0.35);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.catalog-video video {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+.mini-game-box {
+  width: 1000px; /* ← 小さくした */
+  padding: 20px;
+
+  background: rgba(20,20,20,0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.25);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+}
+
+/* =========================
+   ★ 公式UI風：開始ボタン
+   ========================= */
+#startButton {
+  padding: 12px 28px;
+  font-size: 20px;
+  font-weight: bold;
+
+  background: rgba(255, 246, 237, 0.65);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(32, 32, 28, 0.35);
+  border-radius: 12px;
+
+  color: #f31707;
+  cursor: pointer;
+  transition: 0.25s ease;
+  position: absolute;
+  top: 50px;
+  right:0px;
+  transform: translateX(-50%);
+
+  z-index: 100; /* ← タイトル画面より上にする */
+  position: absolute; /* ← 念のため明示 */
+}
+
+#startButton:hover {
+  background: rgba(255,255,255,0.35);
+  transform: translateX(-50%) scale(1.05);
+}
+
+/* =========================
+   ★ 公式UI風：上下ボタン
+   ========================= */
+   /* ▼ 上下ボタン */
+#dpad {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column; /* ← これで縦並び */
+  gap: 14px; /* ← ボタン間の余白 */
+}
+#dpad button {
+  width: 120px;
+  height: 70px;
+  font-size: 28px;
+  font-weight: bold;
+
+  background: rgba(4, 219, 226, 0.15);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(22, 170, 138, 0.35);
+  border-radius: 14px;
+
+  color: #fff;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+#dpad button:hover {
+  background: rgba(255,255,255,0.35);
+  transform: scale(1.05);
+}
+
+/* =========================
+   ★ 公式UI風：Zボタン
+   ========================= */
+   /* ▼ Zボタン */
+#zpad {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+#zpad button {
+  width: 130px;
+  height: 130px;
+  font-size: 32px;
+  font-weight: bold;
+
+  background: rgba(255,80,80,0.25);
+  backdrop-filter: blur(6px);
+  border: 2px solid rgba(255,255,255,0.35);
+  border-radius: 50%;
+
+  color: #fff;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+#zpad button:hover {
+  background: rgba(255,80,80,0.45);
+  transform: scale(1.08);
+}
+
+/* ▼ 説明テキスト */
+#infoBox {
+  position: absolute;
+  color:white;
+  top: 50px;
+  left: 0px;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: left;
+}
+
+.page-image {
+  width: 90%;
+  max-width: 400px;
+  object-fit: contain;
+}
+
+.page-text {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.catalog-grid.page.ep-episode {
+  display: grid;
+  grid-template-columns: 350px 380px !important; /* ← 左右を固定幅に */
+  gap: 40px;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+/* ▼ 左カラム */
+.ep-left-col {
+  padding-top: 20px;   /* ← ここで下げる */
+  min-width: 0;
+}
+
+/* ▼ EP の文章 */
+.ep-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgb(206, 244, 245);
+  width: 100%;
+}
+
+/* 画像は枠に合わせて自動調整 */
+.ep-episode-img {
+  width: 100%;          /* ← 枠いっぱいに広げる */
+  height: auto;         /* ← 比率維持 */
+  max-height: 70vh;     /* ← 画面に収まるように制限 */
+  object-fit: contain;  /* ← 枠に収まるように縮む */
+}
+
+/* ▼ 最終ページだけ 1 カラムにする */
+.catalog-grid.page.ep-final {
+  grid-template-columns: 1fr !important;
+}
+
+/* ▼ 左右のカラムを縦に並べる（文章だけのページにする） */
+.catalog-grid.page.ep-final .ep-left-col,
+.catalog-grid.page.ep-final .ep-right-col {
+  grid-column: 1;
+  width: 100%;
+}
+
+/* ▼ 画像は非表示（文章だけのページにしたい場合） */
+.catalog-grid.page.ep-final .ep-episode-img {
+  display: none;
+}
+
+.video-message {
+  position: absolute;
+  top: 200px;        /* ← 上から10px（好きに調整OK） */
+  left: 420px;       /* ← 左から10px */
+  color: rgb(155, 233, 220);
+  background: rgba(0,0,0,0.5);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 18px;
+  white-space: nowrap;   /* ← これで改行しない！ */
+  z-index: 10;
+  pointer-events: none;  /* ← クリックを邪魔しない */
+}
+
+.color-layer::before {
+  width: auto;      /* ← これが重要 */
+  height: auto;     /* ← これも重要 */
+  display: inline-block; /* ← これで勝ち */
+  
+}
+
+.color-layer {
+  pointer-events: auto;
+}
+
+.color-layer::before {
+  pointer-events: auto;
+}
+
+/* =========================
+   ★ 長文ページ専用レイアウト
+   ========================= */
+body.longpage {
+  overflow-y: auto !important;
+  height: auto !important;
+  display: block !important;
+}
+
+/* 固定UIを全部消す（このページだけ） */
+body.longpage .menu-button,
+body.longpage .title-box,
+body.longpage .update-box,
+body.longpage .side-menu,
+body.longpage .official-footer {
+  display: none !important;
+}
+
+/* 長文コンテナを読みやすく */
+.etc-message1 {
+  width: 90%;
+  max-width: 800px;
+  margin: 40px auto 80px auto;
+  padding: 40px 30px;
+
+  background: rgba(255,255,255,0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.1);
+
+  color: #000;
+  line-height: 1.9;
+  font-size: 18px;
+}
+.etc-message1 h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+.minigame-link {
+  margin: 5px auto 10px auto;
+  padding: 5px 5px;
+  text-align:center;
+  background: rgba(255,255,255,0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.1);
+  font-weight:bold;
+  color: #000;
+  line-height: 1.9;
+  font-size: 18px;
+}
+/* =========================
+   ★ 読み物専用スクロールレイヤー
+   ========================= */
+.scroll-layer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+
+  display: none;        /* ← 初期は非表示 */
+  overflow-y: auto;     /* ← ここが最重要！ */
+  z-index: 99999;
+  padding: 40px 0;
+}
+
+.scroll-content {
+  width: 90%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 30px;
+
+  background: rgba(255,255,255,0.9);
+  border-radius: 12px;
+  color: #000;
+  line-height: 1.9;
+  font-size: 18px;
+}
+/* =========================
+   ★ catalog-nav（PC共通）
+   ========================= */
+.catalog-nav {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  width: 70%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.catalog-prev,
+.catalog-next {
+  font-size: 40px;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.catalog-nav div {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border: none !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 58px;
+  font-weight:bold;
+  color: #ffffff;
+  cursor: pointer;
+  transition: 0.25s ease;
+  pointer-events: auto;
+}
+
+.catalog-nav div:hover {
+  background: rgba(255,255,255,0.35);
+  transform: scale(1.1);
+}
+
+/* =========================
+   ★ side-menu（PC共通）
+   ========================= */
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: -230px;
+  width: 250px;
+  height: 100vh;
+
+  background: rgba(80, 80, 80, 0.45);
+  backdrop-filter: blur(4px);
+
+  padding: 10px;
+  transition: 0.3s;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+
+  font-size: 20px;
+  z-index: 90;
+}
+
+.side-menu.open {
+  left: 0;
+}
+/* =========================
+   ★ color-layer（PC共通）
+   ========================= */
+.color-layer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+/* =========================
+   ★ catalog-grid（PC共通）
+   ========================= */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+
+  padding: 40px;
+  width: 90%;
+  max-width: 900px;
+
+  background: rgba(20,20,20,0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.25);
+
+  position: relative;
+}
+
+/* =========================
+   ★ viewer（PC共通）
+   ========================= */
+.viewer {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  margin: 0 auto;
+}
+
+.viewer-frame {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 6px solid #666;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewer-wide {
+  height: 100%;
+  width: auto;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+/* =========================
+   ★ two-column（PC共通）
+   ========================= */
+.item.two-column {
+  display: grid;
+  grid-template-columns: 260px 1fr 380px;
+  gap: 20px;
+}
+
+.ep-left-col {
+  padding-top: 20px;
+  min-width: 0;
+}
+
+.ep-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgb(206, 244, 245);
+  width: 100%;
+}
+
+.ep-episode-img {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+}
+.side-menu a {
+  display: block;
+  margin: 5px 0;
+  text-decoration: none;
+  color: #a6dee2;
+  font-weight:bold;
+  text-shadow: 0 0 6px rgba(0,0,0,0.8);
+}
+ .side-menu h3 {
+  margin-top: 10px;
+  font-size: 26px;
+  color:rgba(200, 250, 171, 0.966);
+  margin-bottom: 6px;
+}
+@media (max-width: 768px) {
+    .side-menu h3 {
+    font-size: 20px;
+    margin: 6px 0 4px 0;
+  }
+  .item.two-column {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  .catalog-grid.page.ep-final {
+    grid-template-columns: 1fr !important;
+  }
+
+  .catalog-grid.page.ep-final .ep-episode-img {
+    display: none;
+  }
+  .thumb-wrap {
+    width: 130px !important;
+    height: 130px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .main-img {
+    width: 120px !important;
+    height: 120px !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+  }
+  .color-layer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    overflow-y: auto !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+  }
+
+  .color-layer .catalog-grid {
+    display: block !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding: 20px !important;
+    margin: 0 auto !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+  }
+    .side-menu {
+    width: 45vw !important;
+    left: -45vw !important;
+    padding: 15px !important;
+    font-size: 18px !important;
+      overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  }
+
+  .side-menu.open {
+    left: 0 !important;
+  }
+  .catalog-nav {
+    position: fixed !important;
+    top: 250px !important;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 0 20px !important;
+
+    display: flex !important;
+    justify-content: space-between !important;
+
+    transform: none !important;
+    pointer-events: none !important;
+    z-index: 999999 !important;
+  }
+
+  .catalog-prev,
+  .catalog-next {
+    pointer-events: auto !important;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 12px !important;
+    border: 2px solid rgba(255,255,255,0.35) !important;
+    background: rgba(0,0,0,0.45) !important;
+
+    font-size: 32px !important;
+    color: #fff !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* ★ ボカシ完全透明化（文章の邪魔をしない） */
+  .catalog-nav div {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+  }
+  .catalog-slider {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    border-radius: 0 !important; /* ← 画面いっぱいにするなら角丸も消す */
+  }
+
+  /* ====== タイトル周り ====== */
+  .title-box {
+    top: 65px;
+    padding: 10px 20px;
+  }
+
+  .main-title {
+    font-size: 32px;
+    letter-spacing: 1px;
+  }
+
+  .signature {
+    font-size: 14px;
+    right: 5px;
+    bottom: 0px;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ====== UPDATE BOX ====== */
+  .update-box {
+    position: static !important;
+    width: 85% !important;
+    margin: 140px auto 20px auto !important;
+    max-height: 220px !important;
+    overflow-y: auto !important;
+    padding: 12px !important;
+    border-radius: 10px !important;
+  }
+
+  /* ====== スライダー ====== */
+  .slider {
+    width: 90% !important;
+    margin-top: 0 !important;
+    height: 250px !important;
+    border-radius: 16px !important;
+  }
+
+  .slides img {
+    width: 100% !important;
+    height: 250px !important;
+    object-fit: cover !important;
+    border-radius: 16px !important;
+  }
+
+  /* ====== フッター ====== */
+  .official-footer {
+    right: 0;
+    left: 0;
+    bottom: 10px;
+    text-align: center;
+    font-size: 10px;
+  }
+
+  /* ====== カタログレイヤー ====== */
+  .color-layer {
+    display: none; /* ← !important を削除 */
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    overflow-y: auto !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+  }
+
+
+  /* ====== ×ボタン ====== */
+  .color-layer .close-btn {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    left: auto !important;
+    font-size: 40px !important;
+    background: rgba(0,0,0,0.55) !important;
+    padding: 6px 14px !important;
+    border-radius: 10px !important;
+    z-index: 999999 !important;
+    pointer-events: auto !important;
+  }
+
+  /* ====== two-column を縦並びに ====== */
+  .item.two-column {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  .thumb-wrap {
+    width: 130px !important;
+    height: 130px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .main-img {
+    width: 120px !important;
+    height: 120px !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+  }
+
+  .viewer-frame {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 6px solid #666; /* ← これで灰色のふちが付く */
+    /* ★ グレーの円枠を復活させる */
+    background: #fff; /* ← 白背景にする */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+    .item[data-vol="1"] .color-dropdown {
+    left: 67% !important;   /* ← 横位置 */
+    top: 0px !important;    /* ← 縦位置 */
+  }
+
+.mini-game-box {
+    background: rgba(20,20,20,0.85) !important; /* ← 黒背景を残す */
+    padding: 180px 40px !important;              /* ← 黒い帯を大きくする */
+    transform: scale(0.5);
+    transform-origin: center left;
+    margin: 0 auto;
+  }
+
+  #dpad button,
+  #zpad button,
+  #startButton {
+    user-select: none !important;     /* ← テキスト選択禁止 */
+    -webkit-user-select: none !important; /* ← iPhone対策 */
+    -webkit-touch-callout: none !important; /* ← 長押しメニュー禁止 */
+  }  
+
+  .concept-img {
+    width: 100% !important;     /* ← 画面幅にフィット */
+    height: auto !important;    /* ← 比率維持 */
+    max-height: 90vh !important;/* ← 画面からはみ出さない */
+    object-fit: contain !important;
+    display: block;
+    margin: 0 auto;
+    margin-top: 40px !important;
+  }
+#zpad {
+    position: absolute;
+    bottom: 20px;
+    left: 400px !important; /* ← ここで好きなだけ調整できる */
+    right: auto !important;
+  }
+}

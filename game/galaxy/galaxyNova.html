@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Galaxy Invader</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  background: #000;
+  font-family: sans-serif;
+  color: #000;
+  overflow: hidden;
+  display: block;   /* ← flex をやめる */
+}
+
+  /* ▼ スワイプ無効化（超重要） */
+  #gameArea {
+    touch-action: none;
+    overscroll-behavior: none;
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  #top-bar {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 12px;
+    box-sizing: border-box;
+  }
+
+  #score-display {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+    background: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+#game-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;   /* ← 横中央 */
+}
+.close-tab-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px 18px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  z-index: 9999;
+  cursor: pointer;
+}
+  canvas {
+    background: #000;
+    display: block;
+    border: 4px solid #fff;
+  }
+
+
+
+  #center-message {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffff66;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 8px #000;
+    pointer-events: none;
+    display: none;
+  }
+
+  #game-over-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  /* ▼ 黒い背景パネル */
+  background: rgba(0, 0, 0, 0.8);
+  padding: 30px 40px;
+  border-radius: 12px;
+
+  /* ▼ 文字 */
+  color: #fff;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+
+  /* ▼ 影で少し立体感 */
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+
+  z-index: 999;
+  display: none;
+  
+  }
+
+  #game-over-overlay .title {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  #game-over-overlay .score {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  #game-over-overlay .highscore {
+    font-size: 18px;
+    color: #ffff66;
+  }
+
+#dpad {
+  position: fixed;
+  bottom: 155px;
+  left: 310px;
+  display: flex;
+  flex-direction: row;   /* ← 横並びに変更 */
+  gap: 12px;
+  z-index: 20;
+}
+
+#dpad button {
+  width: 70px;
+  height: 50px;
+  font-size: 32px;
+  border-radius: 10px;
+  background-color: #333;
+  color: white;
+  border: none;
+  user-select: none;
+}
+
+  /* ▼ Z ボタン */
+  #zpad {
+    position: fixed;
+    bottom: 100px;
+    right: 300px;
+    z-index: 20;
+  }
+
+  #zpad button {
+    width: 100px;
+    height: 100px;
+    font-size: 32px;
+    border-radius: 50%;
+    background-color: crimson;
+    color: white;
+    border: none;
+    user-select: none;
+  }
+  #start-button {
+  position: fixed;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 14px 28px;
+  font-size: 18px;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 10px;
+  color: #fff;
+  z-index: 30;
+}
+
+
+  #score-display {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    z-index: 20;
+  }
+
+  #close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    background: #222;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 16px;
+    z-index: 20;
+  }
+  
+  #game-canvas {
+    margin-top: 60px; /* ← スコアとクローズの分だけ下げる */
+  }
+  /* ▼ スマホ調整 */
+  @media (max-width: 600px) {
+  #start-button {
+  position: fixed;
+  top: 80%;
+  left: 58%;
+  transform: translate(-50%, -50%);
+  padding: 14px 28px;
+  font-size: 18px;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 10px;
+  color: #fff;
+  z-index: 30;
+}
+#dpad {
+  position: fixed;
+  bottom: 120px;
+  left: 10px;
+  display: flex;
+  flex-direction: row;   /* ← 横並びに変更 */
+  gap: 12px;
+  z-index: 20;
+}
+
+#dpad button {
+  width: 70px;
+  height: 50px;
+  font-size: 32px;
+  border-radius: 10px;
+  background-color: #333;
+  color: white;
+  border: none;
+  user-select: none;
+}
+  /* ▼ Z ボタン */
+  #zpad {
+    position: fixed;
+    bottom: 80px;
+    right: 0px;
+    z-index: 20;
+  }
+  }
+</style>
+</head>
+
+<body>
+<div id="gameArea">
+
+<div id="score-display">SCORE: 0</div>
+<div id="close-button">× CLOSE</div>
+
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+    <div id="center-message"></div>
+
+    <div id="game-over-overlay">
+      <div class="title">GAME OVER</div>
+      <div class="score" id="final-score"></div>
+      <div class="highscore" id="high-score"></div>
+    </div>
+  </div>
+
+  <button id="start-button">START</button>
+
+  <!-- ▼ 左右パッド -->
+  <div id="dpad">
+    <button id="left">←</button>
+    <button id="right">→</button>
+  </div>
+
+  <!-- ▼ Z パッド -->
+  <div id="zpad">
+    <button id="shoot">Z</button>
+  </div>
+
+</div>
+
+<script>
+/* ▼ パッド入力を nova.js の keys[] に連動させる */
+function bindButton(selector, key, onPress) {
+  const btn = document.querySelector(selector);
+  if (!btn) return;
+
+  const press = () => {
+    keys[key] = true;
+    if (onPress) onPress();
+  };
+  const release = () => {
+    keys[key] = false;
+  };
+
+  btn.addEventListener("mousedown", press);
+  btn.addEventListener("mouseup", release);
+  btn.addEventListener("mouseleave", release);
+
+  btn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    press();
+  });
+  btn.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    release();
+  });
+}
+
+bindButton("#left", "arrowleft");
+bindButton("#right", "arrowright");
+bindButton("#shoot", "z", () => {
+  if (isGameRunning && !isGameOver) shootBullet();
+});
+</script>
+
+<script src="nova.js"></script>
+</body>
+</html>

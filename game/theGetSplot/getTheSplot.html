@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Scrolling Maze Game</title>
+
+<style>
+
+/* ============================
+   ▼ 全体レイアウト
+============================ */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#gameArea {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  touch-action: none;
+  overscroll-behavior: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ============================
+   ▼ キャンバス（位置固定）
+============================ */
+canvas {
+  margin-top: 20px;
+  border: 4px solid #fff;
+  image-rendering: pixelated;
+}
+
+/* ============================
+   ▼ START ボタン
+============================ */
+#startButton {
+  margin-top: 10px;
+  padding: 14px 28px;
+  font-size: 26px;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+#startButton:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+/* ============================
+   ▼ 閉じるボタン（右上固定）
+============================ */
+.close-tab-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 10px;
+  z-index: 9999;
+  cursor: pointer;
+  user-select: none;
+}
+
+.close-tab-btn:hover {
+  background: rgba(0,0,0,0.7);
+}
+
+/* ============================
+   ▼ 操作ボタン（共通）
+============================ */
+#pad-vertical button,
+#pad-horizontal button {
+  width: 160px;
+  height: 160px;
+  font-size: 48px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.15);
+  border: 3px solid rgba(255,255,255,0.4);
+  color: #fff;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* ============================
+   ▼ PC（小型ボタン）
+============================ */
+body.pc #pad-vertical button,
+body.pc #pad-horizontal button {
+  width: 60px;
+  height: 60px;
+  font-size: 22px;
+  border-radius: 10px;
+}
+
+/* ============================
+   ▼ スマホ（巨大ボタン）
+============================ */
+body.mobile #pad-vertical button,
+body.mobile #pad-horizontal button {
+  width: 200px;
+  height: 200px;
+  font-size: 72px;
+  border-radius: 28px;
+}
+
+/* ============================
+   ▼ ボタンコンテナ（共通初期値）
+============================ */
+#pad-vertical,
+#pad-horizontal {
+  position: fixed;
+  z-index: 999;
+  display: flex;
+  gap: 30px;
+}
+
+/* ▼ 左側：上下（共通初期値） */
+#pad-vertical {
+  flex-direction: column;
+  left: 20px;
+  bottom: 570px;   /* ← 共通初期値 */
+}
+
+/* ▼ 右側：左右（共通初期値） */
+#pad-horizontal {
+  flex-direction: row;
+  right: 20px;
+  bottom: 800px;   /* ← 共通初期値 */
+}
+
+/* ============================
+   ▼ PC 専用位置調整（ここが重要）
+============================ */
+body.pc #pad-vertical {
+  bottom: 0px;   /* ← PC専用の高さ（自由に調整） */
+}
+
+body.pc #pad-horizontal {
+  bottom: 0px;   /* ← PC専用の高さ（自由に調整） */
+}
+
+/* ============================
+   ▼ スマホ専用位置調整
+============================ */
+body.mobile #pad-vertical {
+  bottom: 570px;   /* ← スマホ専用の高さ（自由に調整） */
+}
+
+body.mobile #pad-horizontal {
+  bottom: 800px;   /* ← スマホ専用の高さ（自由に調整） */
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="gameArea">
+
+  <!-- ▼ 閉じるボタン -->
+  <div class="close-tab-btn" onclick="window.close()">× CLOSE</div>
+
+  <!-- ▼ START ボタン -->
+  <button id="startButton">ゲーム開始</button>
+
+  <!-- ▼ ゲームキャンバス -->
+  <canvas id="game" width="900" height="700"></canvas>
+
+  <!-- ▼ 左側：上下 -->
+  <div id="pad-vertical">
+    <button id="btn-up">↑</button>
+    <button id="btn-down">↓</button>
+  </div>
+
+  <!-- ▼ 右側：左右 -->
+  <div id="pad-horizontal">
+    <button id="btn-left">←</button>
+    <button id="btn-right">→</button>
+  </div>
+
+</div>
+
+<script>
+/* ==========================================
+   ▼ スマホ判定 → body にクラス付与
+========================================== */
+if (/Android.+Mobile|iPhone|iPad|iPod/.test(navigator.userAgent)) {
+  document.body.classList.add("mobile");
+} else {
+  document.body.classList.add("pc");
+}
+</script>
+
+<script src="splot.js"></script>
+</body>
+</html>

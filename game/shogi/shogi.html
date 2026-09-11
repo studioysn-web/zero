@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>パレットバトラーズ将棋</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+.pieceLabel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 10px;
+  font-weight: bold;
+  color: rgb(239, 239, 240);
+  text-shadow: 0 0 4px black;
+  pointer-events: none;
+}
+.pieceLabel.up {
+  transform: translateY(-11px); /* 後手用：上にずらす */
+}
+
+.pieceLabel.down {
+  transform: translateY(11px);  /* 先手用：下にずらす */
+}
+
+    body{
+      background:#111;
+      color:#fff;
+      font-family:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow:hidden;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action:none;
+    }
+
+  #close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    background: #222;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 16px;
+    z-index: 20;
+  }
+
+    /* PC版：横並び */
+    #gameScreen{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:row;
+      gap:16px;
+      padding:16px;
+      justify-content:center;
+      align-items:flex-start;
+    }
+
+    /* PC版の盤サイズ（固定） */
+    @media(min-width:600px){
+      #boardArea{
+        width:540px;
+        aspect-ratio:1/1;
+      }
+      #sidePanel{
+        width:350px;
+        max-height:90vh;
+        overflow-y:auto;
+      }
+    }
+#highlightLayer{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  display:grid;
+  grid-template-columns:repeat(9,1fr);
+  grid-template-rows:repeat(9,1fr);
+  pointer-events:none;
+}
+
+    /* スマホ版：縦並び */
+    @media(max-width:600px){
+body{
+    overflow:auto;
+  }
+
+  #gameScreen{
+    position:relative;
+    inset:auto;
+    top:auto;
+    flex-direction:column; 
+    align-items:center;
+    overflow-y:auto;
+    margin-top:30px;
+  }
+
+  #sidePanel{
+    width:90vw;
+    margin-top:20px; /* ← 盤の下に配置される */
+  }
+      #boardArea{
+        width:90vw;
+        aspect-ratio:1/1;
+      }
+      #sidePanel{
+        width:90vw;
+      }
+    }
+
+    /* 盤まわり（cell.png × 81 + 駒レイヤー） */
+    #boardArea{
+      background:#d8b36a;
+      position:relative;
+      flex:0 0 auto;
+      touch-action:none;
+    }
+
+    #boardGrid{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      display:grid;
+      grid-template-columns:repeat(9,1fr);
+      grid-template-rows:repeat(9,1fr);
+      pointer-events:none;
+    }
+
+    .cellImg{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      pointer-events:none;
+    }
+
+    #pieceLayer{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      display:grid;
+      grid-template-columns:repeat(9,1fr);
+      grid-template-rows:repeat(9,1fr);
+      touch-action:none;
+    }
+
+    #pieceLayer > div{
+      position:relative;
+      width:100%;
+      height:100%;
+    }
+
+    .pieceImg{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      pointer-events:auto;
+      touch-action:none;
+      user-select:none;
+    }
+
+    /* タイトル画面（盤の上にかぶせる） */
+    #titleScreen{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:#000 url("/game/shogi/img/start_scr.png") center/cover no-repeat;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:100;
+    }
+
+    #sidePanel{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-width:350px; /* ← これを追加 */
+    }
+
+    .panel{
+      background:#222;
+      border:1px solid #555;
+      border-radius:6px;
+      padding:10px 12px;
+    }
+
+    select{
+      background:#000;
+      color:#fff;
+      border:1px solid #555;
+      padding:4px 6px;
+      border-radius:4px;
+    }
+
+    .btn-main{
+      background:#28a745;
+      color:#fff;
+      padding:6px 12px;
+      border-radius:4px;
+      cursor:pointer;
+      border:none;
+    }
+
+    .btn-sub{
+      background:#555;
+      color:#fff;
+      padding:6px 12px;
+      border-radius:4px;
+      cursor:pointer;
+      border:none;
+    }
+
+    .btn-disabled{
+      opacity:0.4;
+      pointer-events:none;
+    }
+
+    #promoteOverlay,
+    #resultOverlay,
+    #checkOverlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,0.6);
+      z-index:500;
+    }
+
+    #promoteOverlay > div,
+    #resultOverlay > div{
+      background:#222;
+      border:1px solid #555;
+      border-radius:6px;
+      padding:16px 20px;
+      text-align:center;
+    }
+
+    #checkOverlayText{
+      font-size:40px;
+      color:#ff4444;
+      font-weight:bold;
+      text-shadow:0 0 8px #000;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:4px;
+      font-size:14px;
+    }
+
+    th,td{
+      border:1px solid #555;
+      padding:2px 4px;
+      text-align:center;
+    }
+.btn-danger {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-danger:hover {
+  background-color: #c9302c;
+}
+
+.btn-danger:active {
+  background-color: #ac2925;
+}
+  </style>
+</head>
+
+<body>
+
+  <div id="close-button">× CLOSE</div>
+
+  <div id="gameScreen">
+
+    <!-- 盤エリア：cell.png × 81 + 駒レイヤー + タイトル -->
+<div id="boardArea">
+  <div id="boardGrid"></div>
+  <div id="highlightLayer"></div>  <!-- ← これが必要 -->
+  <div id="pieceLayer"></div>
+  <div id="titleScreen"></div>
+</div>
+
+
+    <!-- 右パネル -->
+    <div id="sidePanel">
+
+      <div class="panel">
+        <h2>対局設定</h2>
+
+        <div style="margin-top:6px;">
+          挑戦段：
+          <select id="levelSelect">
+            <option value="1">初段</option>
+          </select>
+        </div>
+
+        <div style="margin-top:6px;">
+          駒色：
+          <select id="colorSelect">
+            <option value="0">通常</option>
+            <option value="1">黄</option>
+            <option value="2">緑</option>
+            <option value="3">青</option>
+            <option value="4">赤</option>
+            <option value="5">深淵</option>
+          </select>
+        </div>
+
+        <div style="margin-top:6px;">
+          対戦相手：
+          <select id="opponentSelect">
+            <option value="ai">AI</option>
+            <option value="man">対人</option>
+          </select>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:nowrap;">
+
+          <button id="startBtn" class="btn-main" data-confirm="対局を開始しますか？">対局開始</button>
+          <button id="endBtn" class="btn-sub btn-disabled" data-confirm="対局を終了しますか？(負け確定)">対局終了</button>
+          &nbsp;&nbsp;&nbsp;&nbsp;<button id="resetStatsBtn" class="btn-sub btn-danger" style="margin-top:6px;" data-confirm="戦歴をリセットしますか？">戦績リセット</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <table>
+          <tr><th>勝</th><th>負</th><th>引</th><th>段</th></tr>
+          <tr>
+            <td id="wins">0</td>
+            <td id="losses">0</td>
+            <td id="draws">0</td>
+            <td id="rank">0</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div id="turnInfo">手番：-</div>
+        <div id="messageBar" style="margin-top:4px;">
+          右パネルで設定して「対局開始」を押してください。
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 成り選択 -->
+  <div id="promoteOverlay">
+    <div>
+      <p style="margin-bottom:10px;">成りますか？</p>
+      <button id="promoteYesBtn" class="btn-main" style="margin-right:8px;">成る</button>
+      <button id="promoteNoBtn" class="btn-sub">成らない</button>
+    </div>
+  </div>
+
+  <!-- 結果表示 -->
+  <div id="resultOverlay">
+    <div>
+      <div id="resultText" style="margin-bottom:8px;"></div>
+      <div id="resultRank" style="margin-bottom:12px;"></div>
+      <button id="resultCloseBtn" class="btn-main">閉じる</button>
+    </div>
+  </div>
+
+  <!-- 王手表示 -->
+  <div id="checkOverlay">
+    <div id="checkOverlayText">王手！</div>
+  </div>
+
+  <script src="shogi.js"></script>
+</body>
+</html>

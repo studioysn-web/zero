@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>Battle Test</title>
+  <style>
+    body { background:#222; color:#fff; text-align:center; margin:0; padding:0; }
+
+    canvas {
+      background:#000;
+      display:block;
+      margin:20px auto;
+      border:4px solid #fff;
+      width: 60vw;   /* ← 画面幅の50%に縮小 */
+      height: auto;  /* ← 比率維持して高さが決まる */
+    }
+
+    #statusUI {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      width: 200px;
+      padding: 10px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      font-family: sans-serif;
+      border: 2px solid white;
+      z-index: 0;
+      text-align: left;
+      user-select: none;
+    }
+    #statusUI .line { margin-bottom: 6px; }
+
+    #controllerArea {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    .close-tab-btn {
+      position: absolute;
+      top: 0px;
+      right: 10px;
+      padding: 10px 18px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #fff;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      pointer-events: auto;
+      user-select: none;
+    }
+
+    .dpad {
+      position: absolute;
+      bottom: 140px;
+      left: 20px;
+      width: 180px;
+      height: 180px;
+      pointer-events: auto;
+    }
+
+    .btn {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      font-size: 26px;
+      font-weight: bold;
+      background: rgba(4, 219, 226, 0.15);
+      border: 2px solid rgba(22, 170, 138, 0.35);
+      border-radius: 14px;
+      color: #fff;
+      user-select: none;
+      pointer-events: auto;
+    }
+
+    .btn.up    { top: 0; left: 50%; transform: translateX(-50%); }
+    .btn.left  { top: 50%; left: 0; transform: translateY(-50%); }
+    .btn.right { top: 50%; right: 0; transform: translateY(-50%); }
+    .btn.down  { bottom: 0; left: 50%; transform: translateX(-50%); }
+
+    .action-pad {
+      position: absolute;
+      bottom: 140px;
+      right: 20px;
+      width: 200px;
+      height: 200px;
+      pointer-events: auto;
+    }
+
+    .act-btn {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      font-size: 28px;
+      font-weight: bold;
+      background: rgba(255,80,80,0.25);
+      border: 2px solid rgba(255,255,255,0.35);
+      border-radius: 50%;
+      color: #fff;
+      user-select: none;
+      pointer-events: auto;
+    }
+
+    @media (orientation: landscape) and (max-height: 600px) {
+      canvas {
+        width: 36vw;   /* ← 横向きの時だけ小さくする */
+        height: auto;  /* ← 比率維持 */
+      }
+        .dpad {
+        bottom: 0px !important;
+        left: 1px;
+      }
+
+      .action-pad {
+        bottom: 0px !important;
+        right: 20px;
+        width: 180px;
+        height: 180px;
+      }
+      #statusUI {
+        top: 0px;
+        left: 170px;
+        font-size:8px;
+        width: 75px;
+      }
+    }
+    @media (orientation: portrait) and (max-width: 600px) {
+      canvas {
+        width: 95vw;   /* ← 横向きの時だけ小さくする */
+        height: auto;  /* ← 比率維持 */
+      }
+      .dpad {
+        bottom: 120px !important;
+        left: 1px;
+      }
+
+      .action-pad {
+        bottom: 120px !important;
+        right: 20px;
+        width: 180px;
+        height: 270px;
+      }
+        #statusUI {
+        top: 305px;
+        left: 5px;
+        font-size:8px;
+        width: 95px;
+      }
+      .close-tab-btn {
+        top:0px;
+      }
+    }
+    .act-btn.z { bottom: 110px; left: 0; }
+    .act-btn.x { bottom: 110px; right: 0;}
+    .act-btn.c { top: 10px; left: 50%; transform: translateX(-50%); }
+
+  </style>
+</head>
+
+<body>
+
+<div id="statusUI">
+  <div class="line">たいりょく: <span id="uiHp"></span></div>
+  <div class="line">そうび(Z): <span id="uiAtk"></span></div>
+  <div class="line">鉄くず(Z): <span id="uiBullets"></span></div>
+  <div class="line">かいふく(X): <span id="uiHeals"></span></div>
+  <div class="line">Gold: <span id="uiGold"></span></div>
+  <div class="line">逃亡(C)</div>
+</div>
+
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<div id="controllerArea">
+
+
+  <div class="close-tab-btn"  onclick="window.close()">× </div>
+  <div class="dpad">
+    <button class="btn up" id="btnUp">↑</button>
+    <button class="btn left" id="btnLeft">←</button>
+    <button class="btn right" id="btnRight">→</button>
+    <button class="btn down" id="btnDown">↓</button>
+  </div>
+
+  <div class="action-pad">
+    <button class="act-btn z" id="btnZ">Z</button>
+    <button class="act-btn x" id="btnX">X</button>
+    <button class="act-btn c" id="btnC">C</button>
+  </div>
+
+</div>
+
+<script src="./js/mapLoader.js"></script>
+<script src="./js/main.js"></script>
+<script src="./js/battle.js"></script>
+
+<script>
+// ★ キー入力（main.js と共有）
+document.addEventListener("keydown", e => keys[e.code] = true);
+document.addEventListener("keyup",   e => keys[e.code] = false);
+
+// ★ スマホタッチ → keydown / keyup を人工発火
+function bindMobileKey(btnId, keyCode) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+
+  const down = () => {
+    document.dispatchEvent(new KeyboardEvent("keydown", { code: keyCode }));
+  };
+
+  const up = () => {
+    document.dispatchEvent(new KeyboardEvent("keyup", { code: keyCode }));
+  };
+
+  // ★ pointer 系で統一（スマホでもPCでも確実に動く）
+  btn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    down();
+  });
+
+  btn.addEventListener("pointerup", (e) => {
+    e.preventDefault();
+    up();
+  });
+
+  // ★ スマホ特有のキャンセル対策
+  btn.addEventListener("pointercancel", (e) => {
+    e.preventDefault();
+    up();
+  });
+
+  btn.addEventListener("pointerleave", (e) => {
+    e.preventDefault();
+    up();
+  });
+}
+
+
+// ★ ボタンに割り当て
+bindMobileKey("btnZ", "KeyZ");
+bindMobileKey("btnX", "KeyX");
+bindMobileKey("btnC", "KeyC");
+bindMobileKey("btnUp", "ArrowUp");
+bindMobileKey("btnDown", "ArrowDown");
+bindMobileKey("btnLeft", "ArrowLeft");
+bindMobileKey("btnRight", "ArrowRight");
+
+// × ボタン
+document.getElementById("closeBtn").addEventListener("click", () => {
+  console.log("Close pressed");
+});
+</script>
+
+<div id="playerHpBar" style="
+  position:absolute;
+  top: 23px;        /* ← 好きなだけ下げられる */
+  left:50%;
+  transform:translateX(-50%);
+  width:160px;
+  height:14px;
+  background:rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.6);
+  border-radius:4px;
+  overflow:hidden;
+  z-index:9999;
+">
+  <div id="playerHpFill" style="
+    height:100%;
+    width:100%;
+    background:rgba(93, 247, 4, 0.9);
+  "></div>
+</div>
+
+<script>
+  // iPhone Safari のテキスト選択禁止（最強セット）
+  const ui = document.getElementById("controllerArea");
+
+  // テキスト選択開始を完全に無効化
+  document.addEventListener("selectstart", (e) => {
+    e.preventDefault();
+  });
+
+  // 長押しによる選択・コピー・ハイライトを無効化
+  document.addEventListener("touchstart", (e) => {
+    // 入力欄以外は全部禁止
+    if (e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Safari の長押しメニュー（コピー・共有）を無効化
+  document.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
+</script>
+
+
+</body>
+</html>

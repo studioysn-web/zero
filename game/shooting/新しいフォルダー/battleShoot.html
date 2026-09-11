@@ -1,0 +1,37 @@
+<div class="mini-game-box">
+
+  <div class="close-btn">×</div>
+
+  <div class="game-area">
+
+    <!-- タイトル画面 -->
+    <img id="titleScreen" src="./game/shooting/img/start_scr.png">
+
+    <!-- ゲームキャンバス -->
+    <canvas id="gameCanvas" width="720" height="440"></canvas>
+
+    <!-- UIレイヤー（位置は後から自由に変えられる） -->
+    <div id="ui-layer">
+
+      <button id="startButton" onclick="startGame()">開始</button>
+
+      <div id="infoBox">
+          　説明<br>
+          ・上下キーで移動<br>
+          ・Zキーで攻撃
+      </div>
+
+      <div id="dpad">
+          <button id="up">↑</button>
+          <button id="down">↓</button>
+      </div>
+
+      <div id="zpad">
+          <button id="shoot">Z</button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

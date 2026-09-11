@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>フォルダ対応マップメーカー 完全版（矩形＋追加/削除＋チェスト画像）</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-family: sans-serif;
+  }
+  .row {
+    display: flex;
+    gap: 20px;
+  }
+  .box {
+    border: 1px solid #aaa;
+    padding: 10px;
+  }
+  #mapCanvas {
+    border: 1px solid #333;
+    image-rendering: pixelated;
+  }
+  #selectorBox {
+    display: block;
+    padding: 10px;
+  }
+  .selectorSection {
+    margin-bottom: 20px;
+  }
+  .selectorSection hr {
+    border: none;
+    border-top: 1px solid #aaa;
+    margin: 10px 0;
+  }
+  .selectorItem {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 4px;
+  }
+  .selectorItem canvas {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #333;
+    image-rendering: pixelated;
+  }
+  .selectorItem input[type="radio"] {
+    transform: scale(1.2);
+  }
+</style>
+</head>
+<body>
+
+<div class="row">
+  <div class="box">
+    <h3>設定</h3>
+    マップID:(最初に入れて*eventIdに使用)<br>
+    <input id="mapId" type="text"><br>
+    行き先マップID:(最初に入れて*portal配置時に使用)<br>
+    <input id="portalTo" type="text"><br>
+    <br/>
+
+    横セル数: <input id="mapW" type="number" value="15"><br>
+    縦セル数: <input id="mapH" type="number" value="12"><br><br>
+
+    フォルダ選択<br>
+    <input type="file" id="rootFolder" webkitdirectory><br><br>
+
+
+    JSON読み込み:<br>
+    <input id="jsonFile" type="file" accept=".json"><br><br>
+
+    描画モード：<br>
+    <label><input type="radio" name="mode" value="image" checked>タイルモード(data)</label><br>
+    <label><input type="radio" name="mode" value="rank">敵ランクモード(rank)</label><br>
+    <label><input type="radio" name="mode" value="portal">ポータル配置(portal)</label><br>
+    <label><input type="radio" name="mode" value="char">キャラ配置(char)</label><br>
+    <label><input type="radio" name="mode" value="chest">チェスト配置(chest)</label><br><br>
+
+    ★アクション（共通）<br>
+    <label><input type="radio" name="action" value="add" checked>追加</label>
+    <label><input type="radio" name="action" value="del">削除</label><br><br>
+
+    敵ランク選択:<br>
+    <select id="rankSelect">
+      <option>0</option><option>1</option><option>2</option><option>3</option>
+      <option>4</option><option>5</option><option>6</option><option>7</option>
+      <option>8</option><option>9</option><option>10</option>
+    </select><br><br>
+
+    <button id="generateBtn">JSON生成</button>
+  </div>
+
+  <div class="box">
+    <h3>マップ編集</h3>
+    <canvas id="mapCanvas" width="480" height="384"></canvas>
+  </div>
+</div>
+
+<div class="box">
+  <h3>選択一覧（タイル / キャラ / チェスト）</h3>
+  <div id="selectorBox"></div>
+</div>
+
+<script>
+const TILE_SIZE = 32;
+
+// タイル
+let tileImages = [];
+let tileFiles  = [];
+let selectedTileIndex = 0;
+
+// キャラ
+let charImages = [];
+let charFiles  = [];
+let selectedCharIndex = 0;
+
+// チェスト
+let chestImages = [];
+let chestFiles  = [];
+let selectedChestIndex = 0;
+
+// マップデータ
+let dataLayer   = [];
+let rankLayer   = [];
+let portalList  = [];
+let charList    = [];
+let chestList   = [];
+
+let mapCanvas = document.getElementById("mapCanvas");
+let mapCtx    = mapCanvas.getContext("2d");
+
+let isDragging = false;
+let dragStartX = null;
+let dragStartY = null;
+
+function extractName(filename) {
+  return filename.replace(".png", "");
+}
+
+
+// === マップデータ初期化（最初だけ） ===
+function initMap(w, h) {
+  for (let y = 0; y < h; y++) {
+    let rowD = [];
+    let rowR = [];
+    for (let x = 0; x < w; x++) {
+      rowD.push(null);
+      rowR.push(0);
+    }
+    dataLayer.push(rowD);
+    rankLayer.push(rowR);
+  }
+}
+
+// === マップ描画 ===
+function drawMap() {
+  let w = parseInt(mapW.value);
+  let h = parseInt(mapH.value);
+  let mode = document.querySelector("input[name='mode']:checked").value;
+
+  mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+
+  // ============================
+  // ① タイルは常に描画
+  // ============================
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+
+      // ★ undefined セルを自動初期化（重要）
+      if (!dataLayer[y]) dataLayer[y] = [];
+      if (dataLayer[y][x] === undefined) dataLayer[y][x] = null;
+
+      let fileName = dataLayer[y][x];
+      if (fileName !== null) {
+        let idx = tileFiles.indexOf(fileName + ".png");
+        if (idx !== -1 && tileImages[idx]) {
+          mapCtx.drawImage(tileImages[idx], x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
+      }
+    }
+  }
+
+
+  // ============================
+  // ② rank（数字）も常に描画（半透明）
+  // ============================
+  mapCtx.fillStyle = "rgba(255,255,0,0.6)";
+  mapCtx.font = "20px sans-serif";
+  mapCtx.textAlign = "center";
+  mapCtx.textBaseline = "middle";
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+
+      // ★ undefined を初期値 0 にする（重要）
+      if (!rankLayer[y]) rankLayer[y] = [];
+      if (rankLayer[y][x] === undefined) rankLayer[y][x] = 0;
+
+      let num = rankLayer[y][x];
+      if (num !== 0) {
+        mapCtx.fillText(num, x*TILE_SIZE + TILE_SIZE/2, y*TILE_SIZE + TILE_SIZE/2);
+      }
+    }
+  }
+
+
+  // ============================
+  // ③ portal も常に描画
+  // ============================
+  mapCtx.fillStyle = "rgba(0,255,0,0.7)";
+  portalList.forEach(p => {
+    if (p.x < w && p.y < h) {
+      mapCtx.fillRect(p.x*TILE_SIZE+8, p.y*TILE_SIZE+8, 16, 16);
+    }
+  });
+
+  // ============================
+  // ④ char も常に描画
+  // ============================
+  charList.forEach(c => {
+    if (c.x < w && c.y < h) {
+        console.log("char=" + c.name);
+        let idx = charFiles.indexOf(c.name + ".png");
+        if (idx !== -1 && charImages[idx]) {
+        mapCtx.drawImage(charImages[idx], c.x*TILE_SIZE, c.y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
+    }
+  });
+
+  // ============================
+  // ⑤ chest も常に描画
+  // ============================
+  chestList.forEach(c => {
+    if (c.x < w && c.y < h) {
+      let idx = chestFiles.indexOf(c.name + ".png");
+
+      if (idx !== -1 && chestImages[idx]) {
+        mapCtx.drawImage(chestImages[idx], c.x*TILE_SIZE, c.y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      }
+    }
+  });
+
+  // ============================
+  // ⑥ 編集モードのレイヤーだけ強調表示
+  // ============================
+  if (mode === "portal") {
+    mapCtx.strokeStyle = "lime";
+    portalList.forEach(p => {
+      mapCtx.strokeRect(p.x*TILE_SIZE+4, p.y*TILE_SIZE+4, TILE_SIZE-8, TILE_SIZE-8);
+    });
+  }
+
+  if (mode === "char") {
+    mapCtx.strokeStyle = "red";
+    charList.forEach(c => {
+      mapCtx.strokeRect(c.x*TILE_SIZE+4, c.y*TILE_SIZE+4, TILE_SIZE-8, TILE_SIZE-8);
+    });
+  }
+
+  if (mode === "chest") {
+    mapCtx.strokeStyle = "orange";
+    chestList.forEach(c => {
+      mapCtx.strokeRect(c.x*TILE_SIZE+4, c.y*TILE_SIZE+4, TILE_SIZE-8, TILE_SIZE-8);
+    });
+  }
+
+  if (mode === "rank") {
+    mapCtx.strokeStyle = "yellow";
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (rankLayer[y][x] !== 0) {
+          mapCtx.strokeRect(x*TILE_SIZE+4, y*TILE_SIZE+4, TILE_SIZE-8, TILE_SIZE-8);
+        }
+      }
+    }
+  }
+
+  // ============================
+  // ⑦ グリッドは最後に描画
+  // ============================
+  drawGrid(w, h);
+}
+
+
+// === グリッド描画 ===
+function drawGrid(w, h) {
+  mapCtx.strokeStyle = "#555";
+  for (let x = 0; x <= w; x++) {
+    mapCtx.beginPath();
+    mapCtx.moveTo(x*TILE_SIZE, 0);
+    mapCtx.lineTo(x*TILE_SIZE, h*TILE_SIZE);
+    mapCtx.stroke();
+  }
+  for (let y = 0; y <= h; y++) {
+    mapCtx.beginPath();
+    mapCtx.moveTo(0, y*TILE_SIZE);
+    mapCtx.lineTo(w*TILE_SIZE, y*TILE_SIZE);
+    mapCtx.stroke();
+  }
+}
+
+// === マップサイズ変更 ===
+mapW.addEventListener("change", resizeCanvas);
+mapH.addEventListener("change", resizeCanvas);
+
+function resizeCanvas() {
+  let w = parseInt(mapW.value);
+  let h = parseInt(mapH.value);
+
+  mapCanvas.width  = w * TILE_SIZE;
+  mapCanvas.height = h * TILE_SIZE;
+
+  drawMap();
+}
+
+
+
+
+// === 選択一覧更新（タイル / キャラ / チェスト全部出す＋hrで区切り） ===
+function updateSelectorBox() {
+  let box = document.getElementById("selectorBox");
+  box.innerHTML = "";
+
+  // タイル
+  let tileSection = document.createElement("div");
+  tileSection.className = "selectorSection";
+
+  let tileTitle = document.createElement("div");
+  tileTitle.textContent = "タイル";
+  tileSection.appendChild(tileTitle);
+
+  tileFiles.forEach((file, index) => {
+    if (!tileImages[index]) return; // ★ロード前は描画しない
+
+    let item = document.createElement("div");
+    item.className = "selectorItem";
+
+    let c = document.createElement("canvas");
+    c.width = TILE_SIZE;
+    c.height = TILE_SIZE;
+    c.getContext("2d").drawImage(tileImages[index], 0, 0, TILE_SIZE, TILE_SIZE);
+
+    let rb = document.createElement("input");
+    rb.type = "radio";
+    rb.name = "selectorTile";
+    rb.value = index;
+    if (index === selectedTileIndex) rb.checked = true;
+    rb.addEventListener("change", () => selectedTileIndex = index);
+
+    item.appendChild(c);
+    item.appendChild(rb);
+    tileSection.appendChild(item);
+  });
+
+  tileSection.appendChild(document.createElement("hr"));
+  box.appendChild(tileSection);
+
+  // キャラ
+  let charSection = document.createElement("div");
+  charSection.className = "selectorSection";
+
+  let charTitle = document.createElement("div");
+  charTitle.textContent = "キャラ";
+  charSection.appendChild(charTitle);
+
+  charFiles.forEach((file, index) => {
+    if (!charImages[index]) return; // ★ロード前は描画しない
+
+    let item = document.createElement("div");
+    item.className = "selectorItem";
+
+    let c = document.createElement("canvas");
+    c.width = TILE_SIZE;
+    c.height = TILE_SIZE;
+    c.getContext("2d").drawImage(charImages[index], 0, 0, TILE_SIZE, TILE_SIZE);
+
+    let rb = document.createElement("input");
+    rb.type = "radio";
+    rb.name = "selectorChar";
+    rb.value = index;
+    if (index === selectedCharIndex) rb.checked = true;
+    rb.addEventListener("change", () => selectedCharIndex = index);
+
+    item.appendChild(c);
+    item.appendChild(rb);
+    charSection.appendChild(item);
+  });
+
+  charSection.appendChild(document.createElement("hr"));
+  box.appendChild(charSection);
+
+  // チェスト
+  let chestSection = document.createElement("div");
+  chestSection.className = "selectorSection";
+
+  let chestTitle = document.createElement("div");
+  chestTitle.textContent = "チェスト";
+  chestSection.appendChild(chestTitle);
+
+  chestFiles.forEach((file, index) => {
+    if (!chestImages[index]) return; // ★ロード前は描画しない
+
+    let item = document.createElement("div");
+    item.className = "selectorItem";
+
+    let c = document.createElement("canvas");
+    c.width = TILE_SIZE;
+    c.height = TILE_SIZE;
+    c.getContext("2d").drawImage(chestImages[index], 0, 0, TILE_SIZE, TILE_SIZE);
+
+    let rb = document.createElement("input");
+    rb.type = "radio";
+    rb.name = "selectorChest";
+    rb.value = index;
+    if (index === selectedChestIndex) rb.checked = true;
+    rb.addEventListener("change", () => selectedChestIndex = index);
+
+    item.appendChild(c);
+    item.appendChild(rb);
+    chestSection.appendChild(item);
+  });
+
+  box.appendChild(chestSection);
+}
+
+
+// === モード変更（描画だけ変えるので一覧は常に全部出す） ===
+document.querySelectorAll("input[name='mode']").forEach(r => {
+  r.addEventListener("change", drawMap);
+});
+
+// === セル塗り（単セル） ===
+function paintCell(e) {
+  let w = parseInt(mapW.value);
+  let h = parseInt(mapH.value);
+
+  let rect = mapCanvas.getBoundingClientRect();
+  let x = Math.floor((e.clientX - rect.left) / TILE_SIZE);
+  let y = Math.floor((e.clientY - rect.top) / TILE_SIZE);
+
+  if (x < 0 || y < 0 || x >= w || y >= h) return;
+
+  let mode   = document.querySelector("input[name='mode']:checked").value;
+  let action = document.querySelector("input[name='action']:checked").value;
+
+  if (mode === "image") {
+    if (action === "add") {
+        let file = tileFiles[selectedTileIndex];
+        let num = parseInt(file.replace(".png", ""));
+        dataLayer[y][x] = num;
+
+    } else {
+      dataLayer[y][x] = null;
+    }
+  }
+  else if (mode === "rank") {
+    if (action === "add") {
+      rankLayer[y][x] = parseInt(rankSelect.value);
+    } else {
+      rankLayer[y][x] = 0;
+    }
+  }
+  else if (mode === "portal") {
+    if (action === "add") {
+      let toMap = portalTo.value;
+      let exists = portalList.some(p => p.x === x && p.y === y);
+      let id = portalList.length + 1;
+      if (!exists) {
+        portalList.push({
+          id: id,
+          x, y,
+          to: toMap,
+          px: x,
+          py: y
+        });
+      }
+    } else {
+      portalList = portalList.filter(p => !(p.x === x && p.y === y));
+    }
+  }
+  else if (mode === "char") {
+    if (action === "add") {
+      if (charFiles.length === 0) return;
+
+    let rawName   = charFiles[selectedCharIndex];
+    let cleanName = rawName.replace(".png", "");
+
+      let found = charList.find(c => c.x === x && c.y === y);
+
+      if (found) {
+        found.name = cleanName;
+      } else {
+        let id = charList.length + 1;
+        let mapId = document.getElementById("mapId").value;
+
+        charList.push({
+        id: id,
+        name: cleanName,
+        x, y,
+        move: "stay",
+        talk: [],
+        //eventId: `${mapId}_c_${id}`
+        });
+      }
+    } else {
+      charList = charList.filter(c => !(c.x === x && c.y === y));
+    }
+  }
+  else if (mode === "chest") {
+    if (action === "add") {
+      let found = chestList.find(c => c.x === x && c.y === y);
+
+      if (!found) {
+        let rawName   = chestFiles[selectedChestIndex];
+        let cleanName = rawName.replace(".png", "");
+        let id = chestList.length + 1;
+        let mapId = document.getElementById("mapId").value;
+        chestList.push({
+          id: id,
+          x, y,
+
+        name: cleanName,
+
+          group: "item",
+          itemId: 1,
+          value: 1,
+          eventId: `${mapId}_i_${id}`
+        });
+      }
+    } else {
+      chestList = chestList.filter(c => !(c.x === x && c.y === y));
+    }
+  }
+
+  drawMap();
+}
+
+// === ドラッグ開始 ===
+mapCanvas.addEventListener("mousedown", (e) => {
+  isDragging = true;
+
+  let rect = mapCanvas.getBoundingClientRect();
+  dragStartX = Math.floor((e.clientX - rect.left) / TILE_SIZE);
+  dragStartY = Math.floor((e.clientY - rect.top) / TILE_SIZE);
+
+  paintCell(e);
+});
+
+// === ドラッグ中（単セル塗り） ===
+mapCanvas.addEventListener("mousemove", (e) => {
+  if (isDragging) paintCell(e);
+});
+
+// === ドラッグ終了（矩形処理） ===
+mapCanvas.addEventListener("mouseup", (e) => {
+  isDragging = false;
+
+  let rect = mapCanvas.getBoundingClientRect();
+  let endX = Math.floor((e.clientX - rect.left) / TILE_SIZE);
+  let endY = Math.floor((e.clientY - rect.top) / TILE_SIZE);
+
+  fillRect(dragStartX, dragStartY, endX, endY);
+});
+
+// === マウス離脱 ===
+mapCanvas.addEventListener("mouseleave", () => {
+  isDragging = false;
+});
+
+// === 矩形処理 ===
+function fillRect(x1, y1, x2, y2) {
+  let w = parseInt(mapW.value);
+  let h = parseInt(mapH.value);
+
+  let mode   = document.querySelector("input[name='mode']:checked").value;
+  let action = document.querySelector("input[name='action']:checked").value;
+
+  let sx = Math.min(x1, x2);
+  let sy = Math.min(y1, y2);
+  let ex = Math.max(x1, x2);
+  let ey = Math.max(y1, y2);
+
+  for (let y = sy; y <= ey; y++) {
+    for (let x = sx; x <= ex; x++) {
+
+      if (x < 0 || y < 0 || x >= w || y >= h) continue;
+
+      if (mode === "image") {
+        if (action === "add") {
+            let file = tileFiles[selectedTileIndex];
+            let num = parseInt(file.replace(".png", ""));
+            dataLayer[y][x] = num;
+
+        } else {
+          dataLayer[y][x] = null;
+        }
+      }
+      else if (mode === "rank") {
+        if (action === "add") {
+          rankLayer[y][x] = parseInt(rankSelect.value);
+        } else {
+          rankLayer[y][x] = 0;
+        }
+      }
+      else if (mode === "portal") {
+        if (action === "add") {
+          let toMap = portalTo.value;
+          let exists = portalList.some(p => p.x === x && p.y === y);
+          if (!exists) {
+            portalList.push({
+              id: "portal_" + String(portalList.length + 1).padStart(2, "0"),
+              x, y,
+              to: toMap,
+              px: x,
+              py: y
+            });
+          }
+        } else {
+          portalList = portalList.filter(p => !(p.x === x && p.y === y));
+        }
+      }
+      else if (mode === "char") {
+        if (action === "add") {
+          if (charFiles.length === 0) continue;
+          let rawName   = charFiles[selectedCharIndex];
+          let cleanName = rawName.replace(".png", "");
+
+          let found = charList.find(c => c.x === x && c.y === y);
+
+          if (found) {
+            found.name = cleanName;
+          } else {
+            let id = charList.length + 1;
+            let mapId = document.getElementById("mapId").value;
+
+            charList.push({
+            id: id,
+            name: cleanName,
+            x, y,
+            move: "stay",
+            talk: [],
+            eventId: `${mapId}_c_${id}`
+            });
+
+          }
+        } else {
+          charList = charList.filter(c => !(c.x === x && c.y === y));
+        }
+      }
+      else if (mode === "chest") {
+        if (action === "add") {
+          let found = chestList.find(c => c.x === x && c.y === y);
+
+          if (!found) {
+            let id = chestList.length + 1;
+            let mapId = document.getElementById("mapId").value;
+            let rawName   = chestFiles[selectedChestIndex];
+            let cleanName = rawName.replace(".png", "");
+            chestList.push({
+              id: "chest_" + String(chestList.length + 1).padStart(2, "0"),
+              x, y,
+              name: cleanName,
+              group: "item",
+              itemId: 1,
+              value: 1,
+              eventId: `${mapId}_i_${id}`
+            });
+          }
+        } else {
+          chestList = chestList.filter(c => !(c.x === x && c.y === y));
+        }
+      }
+    }
+  }
+
+  drawMap();
+}
+
+// === JSON読み込み ===
+jsonFile.addEventListener("change", (e) => {
+  let file = e.target.files[0];
+  if (!file) return;
+
+  let reader = new FileReader();
+  reader.onload = () => {
+    let json = JSON.parse(reader.result);
+
+    dataLayer  = json.data;
+    rankLayer  = json.rank;
+    portalList = json.portal || [];
+    charList   = json.char   || [];
+    chestList  = json.chest  || [];
+
+    mapW.value = json.size.w;
+    mapH.value = json.size.h;
+
+    resizeCanvas();
+  };
+  reader.readAsText(file);
+});
+
+// === JSON生成 ===
+generateBtn.addEventListener("click", () => {
+  let w = parseInt(mapW.value);
+  let h = parseInt(mapH.value);
+
+  let croppedData = dataLayer.slice(0, h).map(r => r.slice(0, w));
+  let croppedRank = rankLayer.slice(0, h).map(r => r.slice(0, w));
+
+  // ★ char の name から A/B を削る
+  let filteredChar = charList
+    .filter(c => c.x < w && c.y < h)
+    .map(c => {
+      let name = c.name;
+      if (name.endsWith("A") || name.endsWith("B")) {
+        name = name.slice(0, -1);
+      }
+      return { ...c, name };
+    });
+
+  let filteredPortal = portalList.filter(p => p.x < w && p.y < h);
+  let filteredChest  = chestList.filter(c => c.x < w && c.y < h);
+
+  let jsonText =
+`{
+  "size": { "w": ${w}, "h": ${h} },
+  "encount": false,
+
+  "data": [
+${croppedData.map(r => "    [" + r.join(",") + "]").join(",\n")}
+  ],
+
+  "rank": [
+${croppedRank.map(r => "    [" + r.join(",") + "]").join(",\n")}
+  ],
+
+  "char": ${JSON.stringify(filteredChar, null, 2)},
+  "chest": ${JSON.stringify(filteredChest, null, 2)},
+  "portal": ${JSON.stringify(filteredPortal, null, 2)}
+}`;
+
+  let blob = new Blob([jsonText], { type: "text/plain" });
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "map.json";
+  a.click();
+});
+
+
+// === 初期化 ===
+initMap(15, 12);
+resizeCanvas();
+updateSelectorBox();
+drawMap();
+
+let itemImages = [];
+let itemFiles = [];
+rootFolder.onchange = (e) => {
+  // 読み込み前に初期化（重要）
+  tileImages = [];
+  tileFiles  = [];
+  charImages = [];
+  charFiles  = [];
+  chestImages = [];
+  chestFiles  = [];
+  itemImages = [];
+  itemFiles  = [];
+
+  let files = e.target.files;
+
+  for (let f of files) {
+    if (!f.name.endsWith(".png")) continue;
+
+    let path = f.webkitRelativePath;
+
+    // === tile ===
+    if (path.includes("/tile/")) {
+      let img = new Image();
+      img.onload = () => {
+        tileImages.push(img);
+        tileFiles.push(f.name);
+        updateSelectorBox();   // 読み込み完了後に更新
+      };
+      img.src = URL.createObjectURL(f);
+    }
+
+    // === char ===
+    else if (path.includes("/char/")) {
+      let img = new Image();
+      img.onload = () => {
+        charImages.push(img);
+        charFiles.push(f.name);
+        updateSelectorBox();
+      };
+      img.src = URL.createObjectURL(f);
+    }
+
+    // === chest ===
+    else if (path.includes("/chest/")) {
+      let img = new Image();
+      img.onload = () => {
+        chestImages.push(img);
+        chestFiles.push(f.name);
+        updateSelectorBox();
+      };
+      img.src = URL.createObjectURL(f);
+    }
+
+    // === item ===
+    else if (path.includes("/item/")) {
+      let img = new Image();
+      img.onload = () => {
+        itemImages.push(img);
+        itemFiles.push(f.name);
+        updateSelectorBox();
+      };
+      img.src = URL.createObjectURL(f);
+    }
+  }
+
+  // マップ描画
+  drawMap();
+};
+
+
+</script>
+
+</body>
+</html>

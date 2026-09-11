@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パレットバトラーズ</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+        }
+        #startButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #startButton:hover {
+            background-color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script src="shoot.js"></script> <!-- 外部スクリプト -->
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.src = './img/start_scr.png'; // 背景画像
+
+        img.onload = () => {
+            // 初期描画
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+    </script>
+    <button id="startButton" onclick="startGame()">ゲーム開始</button>
+    <table border="0" style="width:400px;">
+    	<tr>
+    		<td>
+			    <font style="color:white;">
+			    説明：<br/>
+			    &nbsp;&nbsp;矢印キー上下で移動<br/>
+			    &nbsp;&nbsp;Zキーで攻撃
+			    </font>
+			</td>
+			<td id ="hi-score">
+			</td>
+		</tr>
+	</table>
+    
+</body>
+</html>

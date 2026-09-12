@@ -440,6 +440,15 @@ function loop(t) {
   } else if (gameState === "loading") {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "32px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Loading...", canvas.width / 2, canvas.height / 2);
+
+    // 宣伝メッセージ（任意）
+    ctx.font = "20px sans-serif";
+    ctx.fillText("PALETTE BATTLERS - Now Loading", canvas.width / 2, canvas.height / 2 + 40);
   } else if (gameState === "game") {
     updatePlayer(dt);
     updateNPC(dt);

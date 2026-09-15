@@ -109,6 +109,11 @@
     }
 
     @media (orientation: landscape) and (max-height: 600px) {
+      
+    .close-tab-btn {
+        display: none !important;
+      }
+      
       canvas {
         width: 36vw;   /* ← 横向きの時だけ小さくする */
         height: auto;  /* ← 比率維持 */
@@ -131,7 +136,12 @@
         width: 75px;
       }
     }
+    
     @media (orientation: portrait) and (max-width: 600px) {
+
+    .close-tab-btn {
+        display: none !important;
+      }
       canvas {
         width: 95vw;   /* ← 横向きの時だけ小さくする */
         height: auto;  /* ← 比率維持 */

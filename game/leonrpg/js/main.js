@@ -446,6 +446,7 @@ function loop(t) {
     ctx.textAlign = "center";
     ctx.fillText("Loading...", canvas.width / 2, canvas.height / 2);
 
+    
     // 宣伝メッセージ（任意）
     ctx.font = "20px sans-serif";
     ctx.fillText("PALETTE BATTLERS - Now Loading", canvas.width / 2, canvas.height / 2 + 40);

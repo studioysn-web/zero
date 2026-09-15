@@ -13,7 +13,7 @@ const scaleManager = {
 };
 
 // ====== 基本設定 ======
-const imgBasePath = "/game/galaxy/img/";
+const imgBasePath = "/zero/game/galaxy/img/";
 
 // プレイヤー
 const playerImages = ["nova0.png", "nova1.png"];

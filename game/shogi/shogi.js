@@ -114,7 +114,7 @@ function initialSetup(){
 ============================================================ */
 function pieceImagePath(p){
   const code = `${p.owner}${p.color}${p.type}${p.promoted}`;
-  return `/game/shogi/img/${code}.png`;
+  return `/zero/game/shogi/img/${code}.png`;
 }
 
 /* ============================================================

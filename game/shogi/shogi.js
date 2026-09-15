@@ -130,7 +130,7 @@ function renderBoard(){
   // 81マスに cell.png を敷く
   for(let i=0;i<81;i++){
     const img=document.createElement("img");
-    img.src="/game/shogi/img/cell.png";
+    img.src="/zero/game/shogi/img/cell.png";
     img.className="cellImg";
     grid.appendChild(img);
   }

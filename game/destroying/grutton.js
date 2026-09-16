@@ -1,3 +1,5 @@
+const imgPath = "/zero/game/destroying/img/";
+
 function drawLoadingScreen() {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -61,10 +63,10 @@ let timerInterval = null;
 let updateLoop = null;
 
 // ====== 画像 ======
-const grassImg = new Image(); grassImg.src = "/game/destroying/img/grass.png";
-const forestImg = new Image(); forestImg.src = "/game/destroying/img/forest.png";
-const townImg = new Image(); townImg.src = "/game/destroying/img/town.png";
-const townDestroyedImg = new Image(); townDestroyedImg.src = "/game/destroying/img/town_destroyed.png";
+const grassImg = new Image(); grassImg.src = imgPath + "grass.png";
+const forestImg = new Image(); forestImg.src = imgPath + "forest.png";
+const townImg = new Image(); townImg.src = imgPath + "town.png";
+const townDestroyedImg = new Image(); townDestroyedImg.src = imgPath + "town_destroyed.png";
 
 const gruttonWalk = {
   up:    [new Image(), new Image()],
@@ -73,14 +75,14 @@ const gruttonWalk = {
   right: [new Image(), new Image()]
 };
 
-gruttonWalk.up[0].src = "/game/destroying/img/grutton_up_0.png";
-gruttonWalk.up[1].src = "/game/destroying/img/grutton_up_1.png";
-gruttonWalk.down[0].src = "/game/destroying/img/grutton_down_0.png";
-gruttonWalk.down[1].src = "/game/destroying/img/grutton_down_1.png";
-gruttonWalk.left[0].src = "/game/destroying/img/grutton_left_0.png";
-gruttonWalk.left[1].src = "/game/destroying/img/grutton_left_1.png";
-gruttonWalk.right[0].src = "/game/destroying/img/grutton_right_0.png";
-gruttonWalk.right[1].src = "/game/destroying/img/grutton_right_1.png";
+gruttonWalk.up[0].src = imgPath + "grutton_up_0.png";
+gruttonWalk.up[1].src = imgPath + "grutton_up_1.png";
+gruttonWalk.down[0].src = imgPath + "grutton_down_0.png";
+gruttonWalk.down[1].src = imgPath + "grutton_down_1.png";
+gruttonWalk.left[0].src = imgPath + "grutton_left_0.png";
+gruttonWalk.left[1].src = imgPath + "grutton_left_1.png";
+gruttonWalk.right[0].src = imgPath + "grutton_right_0.png";
+gruttonWalk.right[1].src = imgPath + "grutton_right_1.png";
 
 const gruttonAttack = {
   up: new Image(),
@@ -89,15 +91,15 @@ const gruttonAttack = {
   right: new Image()
 };
 
-gruttonAttack.up.src = "/game/destroying/img/grutton_up_attack.png";
-gruttonAttack.down.src = "/game/destroying/img/grutton_down_attack.png";
-gruttonAttack.left.src = "/game/destroying/img/grutton_left_attack.png";
-gruttonAttack.right.src = "/game/destroying/img/grutton_right_attack.png";
+gruttonAttack.up.src = imgPath + "grutton_up_attack.png";
+gruttonAttack.down.src = imgPath + "grutton_down_attack.png";
+gruttonAttack.left.src = imgPath + "grutton_left_attack.png";
+gruttonAttack.right.src = imgPath + "grutton_right_attack.png";
 
 
 // ====== ★ IRIS攻撃（専用レーン＋残留1秒） ======
 const irisImg = new Image();
-irisImg.src = "/game/destroying/img/irisShot.png";
+irisImg.src = imgPath + "irisShot.png";
 
 let irisActive = false;
 let irisX = 0;
@@ -274,7 +276,7 @@ function tryMove(dx, dy, dir) {
 }
 
 const titleImg = new Image();
-titleImg.src = "/game/destroying/img/start_scr.png";
+titleImg.src = imgPath + "start_scr.png";
 
 function drawTitleScreen() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);

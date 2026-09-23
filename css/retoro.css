@@ -1,0 +1,204 @@
+/* ======== ベーススタイル ======== */
+body {
+  margin: 0;
+  background-color: #111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ======== コンテナ ======== */
+.container {
+  width: 90%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ======== タイトル ======== */
+.title-wrapper {
+  width: 70%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.title-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: -30px;
+}
+
+/* ======== 商店街エリア ======== */
+.scene {
+  position: relative;
+  width: 100%;
+  z-index: 1;   /* ← これを追加するだけでOK */
+}
+
+.main-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ======== ホットスポット ======== */
+.hotspot {
+  position: absolute;
+  cursor: pointer;
+  border-radius: 8px;
+  animation: pulse 6s infinite ease-in-out;
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+@keyframes pulse {
+  0%, 20% {
+    box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
+    background-color: rgba(255, 255, 255, 0);
+  }
+  60% {
+    box-shadow: 0 0 12px 4px rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  80%, 100% {
+    box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
+    background-color: rgba(255, 255, 255, 0);
+  }
+}
+
+.hotspot:hover,
+.hotspot:active {
+  animation: none;
+  box-shadow: 0 0 25px 12px rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.25);
+}
+/* ======== ホットスポットラベル（index.html用） ======== */
+.hotspot::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+  z-index: 999;
+}
+
+.hotspot:hover::after {
+  opacity: 1;
+}
+
+/* ======== ホットスポット位置 ======== */
+.gacha { top: 55%; left: 39%; width: 14%; height: 40%; }
+.arcade1 { top: 52%; left: 20%; width: 16%; height: 45%; }
+.arcade2 { top: 45%; left: 1%; width: 12%; height: 45%; }
+.ysnarea1 { top: 40%; left: 63%; width: 11%; height: 35%; }
+.ysnarea2 { top: 45%; left: 76%; width: 5%; height: 30%; }
+.entrance { top: 42%; left: 52%; width: 14%; height: 50%; }
+.update { top: 38%; left: 33%; width: 12%; height: 15%; }
+/* ======== 透過レイヤー ======== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+}
+
+/* ======== 絵本ビュー（拡大版） ======== */
+.book {
+  width: 95%;          /* 画面幅のほぼ全体を使う */
+  max-width: 900px;    /* PCでも大きめに表示 */
+  margin: 0 auto;
+}
+
+.page-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  border-radius: 12px; /* 少し丸みをつけて柔らかく */
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.3); /* 光の縁取りで立体感 */
+}
+
+
+/* 次のページへ進む */
+.slide-left {
+  transform: translateX(-30%);
+  opacity: 0;
+}
+
+/* 前のページへ戻る */
+.slide-right {
+  transform: translateX(30%);
+  opacity: 0;
+}
+@media (max-width: 600px) {
+  .book {
+    width: 100%;
+    max-width: none;
+  }
+  .page-image {
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+  }
+}
+#updatePanel {
+  display: none;
+  width: 50%;               /* ← 黒板っぽく少し狭め */
+  max-height: 50%;
+  overflow-y: auto;
+
+  /* ▼ 黒板風デザイン */
+  background: #1a1a1a;      /* 黒板の黒 */
+  border: 4px solid #3a3a3a;
+  box-shadow: 0 0 25px rgba(0,0,0,0.6);
+  border-radius: 12px;
+
+  /* ▼ チョーク風の文字 */
+  color: #f5f5f5;
+  font-size: 20px;
+  font-weight: 500;         /* ← 太字 */
+  line-height: 1.2;
+  font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+
+  padding: 25px;
+  text-shadow: 1px 1px 2px rgba(255,255,255,0.2); /* チョーク感 */
+}
+/* ===== お知らせ掲示板の文字色 ===== */
+
+/* 日付（黄色チョーク） */
+#updatePanel .date {
+  color: #f352b5;
+  font-weight: 900;
+}
+
+/* 本文（白チョーク） */
+#updatePanel li {
+  color: #89d8f0;
+  margin-bottom: 12px;
+  font-weight: 700;
+  list-style: none;
+}
+
+@media (max-width: 768px) {
+  #updatePanel {
+    width: 85%;            /* スマホでは画面いっぱいに広げる */
+    padding: 15px;         /* 余白を少し狭くする */
+    font-size: 14px;       /* 文字サイズを小さく調整 */
+    max-height: 30%;
+  }
+}

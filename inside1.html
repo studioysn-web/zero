@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Room Slider</title>
+
+  <style>
+    body {
+      margin: 0;
+      background-color: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+     
+    }
+
+    .slider-container {
+      position: relative;
+      width: 90%;
+      max-width: 900px;
+    }
+
+    .image-wrapper {
+      width: 100%;
+      
+    }
+
+    .scene {
+      position: relative;
+      width: 100%;
+    }
+
+    .main-image {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* ===== ホットスポット共通設定 ===== */
+    .hotspot {
+      position: absolute;
+      cursor: pointer;
+      border-radius: 8px;
+      animation: pulse 5s infinite ease-in-out;
+      transition: box-shadow 0.3s ease, background-color 0.3s ease;
+    }
+
+    @keyframes pulse {
+      0%, 40% {
+        box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
+        background-color: rgba(255, 255, 255, 0);
+      }
+      60% {
+        box-shadow: 0 0 12px 4px rgba(255, 255, 255, 0.5);
+        background-color: rgba(255, 255, 255, 0.15);
+      }
+      80%, 100% {
+        box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
+        background-color: rgba(255, 255, 255, 0);
+      }
+    }
+
+    .hotspot:hover {
+      animation: none;
+      box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .hotspot::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      white-space: nowrap;
+      z-index: 10;
+    }
+
+    .hotspot:hover::after {
+      opacity: 1;
+    }
+
+    /* ===== 【追加】一番右のスポット（spot-room0-6）専用の個別デザイン ===== */
+    .spot-room0-6 {
+      /* ここで他のスポットと色や光り方を変えられます */
+      /* 例: ボーダーやアニメーションの変更など */
+    }
+    
+    /* 右端スポット専用メニュー（色や枠線を別にする場合ここで調整） */
+    .game-menu.menu-right-special {
+      border: 2px solid #7eb9ff; /* 例として水色系の枠線に変更 */
+      width: 240px; /* 必要なら幅も個別変更可能 */
+    }
+    .game-menu.menu-right-special li a:hover {
+      background: #7eb9ff; /* ホバー時の色も水色に連動 */
+      color: #111;
+    }
+    /* ===== メニューを「下」に表示させる設定 ===== */
+    .game-menu.menu-bottom {
+      bottom: auto;
+      top: 55%; /* ホットスポットの下側に配置 */
+      transform: translateX(-50%) translateY(-10px);
+    }
+    /* 下開き用が開いたときのアニメーション */
+    .hotspot.is-open .game-menu.menu-bottom {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* ===== ゲーム一覧メニューのデザイン ===== */
+    .game-menu {
+      position: absolute;
+      bottom: 105%;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(0, 0, 0, 0.9);
+      border: 2px solid #ff7eb9;
+      border-radius: 8px;
+      padding: 0px;
+      width: 170px;
+      z-index: 30;
+      
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+    }
+
+    /* 右端用メニュー共通（右側にはみ出さないよう左側に寄せる） */
+    .game-menu.menu-right,
+    .game-menu.menu-right-special {
+      left: auto;
+      right: 0;
+      transform: translateY(10px);
+    }
+    .hotspot.is-open .game-menu.menu-right,
+    .hotspot.is-open .game-menu.menu-right-special {
+      transform: translateY(0);
+    }
+
+    /* 開いたときのアニメーション */
+    .hotspot.is-open .game-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    .hotspot.is-open .game-menu.menu-right,
+    .hotspot.is-open .game-menu.menu-right-special {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .game-menu ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .game-menu li {
+      margin: 6px 0;
+    }
+
+    .game-menu li a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      display: block;
+      padding: 6px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .game-menu li a:hover {
+      background: #ff7eb9;
+      color: #111;
+    }
+
+    /* ===== 部屋ごとのホットスポット位置 ===== */
+    .spot-room0-1 { top: 15%; left: 5%; width: 29%; height: 58%; }
+    .spot-room0-2 { top: 51%; left: 35%; width: 15%; height: 20%; }
+    .spot-room0-3 { top: 75%; left: 15%; width: 22%; height: 22%; }
+    .spot-room0-4 { top: 51%; left: 58%; width: 19%; height: 20%; }
+    .spot-room0-5 { top: 72%; left: 70%; width: 25%; height: 22%; }
+    .spot-room0-6 { top: 25%; left: 90%; width: 10%; height: 40%; }
+    .spot-room1-0 { top: 15%; left: 20%; width: 6%; height: 65%; }
+    .spot-room1-A  { top: 13%; left: 28.1%; width: 1.7%; height: 27%; }
+    .spot-room1-1  { top: 12%; left: 30.1%; width: 1.9%; height: 28%; }
+    .spot-room1-2  { top: 12%; left: 32.3%; width: 1.9%; height: 28%; }
+    .spot-room1-3  { top: 12%; left: 34.3%; width: 1.9%; height: 28%; }
+    .spot-room1-4  { top: 12%; left: 36.1%; width: 1.9%; height: 28%; }
+    .spot-room1-5  { top: 12%; left: 38%; width: 1.9%; height: 28%; }
+    .spot-room1-6  { top: 12%; left: 40%; width: 1.9%; height: 28%; }
+    .spot-room1-7  { top: 12%; left: 42%; width: 1.9%; height: 28%; }    
+    .spot-room1-8  { top: 12%; left: 43.7%; width: 1.9%; height: 28%; }
+	.spot-room1-9  { top: 12%; left: 45.5%; width: 1.9%; height: 28%; }
+	.spot-room1-10 { top: 12%; left: 47.4%; width: 1.9%; height: 28%; }
+	.spot-room1-11 { top: 12%; left: 49.3%; width: 1.9%; height: 28%; }
+	.spot-room1-12 { top: 12%; left: 51.1%; width: 1.9%; height: 28%; }
+	.spot-room1-13 { top: 12%; left: 53.1%; width: 1.9%; height: 28%; }
+	.spot-room1-14 { top: 12%; left: 55.1%; width: 1.9%; height: 28%; }
+	.spot-room1-15 { top: 12%; left: 57.1%; width: 1.9%; height: 28%; }
+	.spot-room1-16 { top: 12%; left: 59%; width: 1.9%; height: 28%; }
+	.spot-room1-17 { top: 12%; left: 60.9%; width: 1.9%; height: 28%; }
+	.spot-room1-18 { top: 12%; left: 62.8%; width: 1.9%; height: 28%; }
+	.spot-room1-19 { top: 12%; left: 64.7%; width: 1.9%; height: 28%; }
+	.spot-room1-20 { top: 12%; left: 66.5%; width: 1.9%; height: 28%; }
+	.spot-room1-21 { top: 12%; left: 68.4%; width: 1.9%; height: 28%; }
+	.spot-room1-22 { top: 12%; left: 70.4%; width: 1.9%; height: 28%; }
+	.spot-room1-23 { top: 12%; left: 72.3%; width: 1.9%; height: 28%; }
+	.spot-room1-24 { top: 12%; left: 74.1%; width: 1.9%; height: 28%; }
+	.spot-room1-25 { top: 12%; left: 76.0%; width: 1.9%; height: 28%; }
+
+	.spot-room1-anv-2 { top: 48%; left: 29.0%; width: 26%; height: 23%; }
+	.spot-room1-anv-1 { top: 48%; left: 55.0%; width: 22%; height: 23%; }
+	.spot-room1-anv-1-5 { top: 75%; left: 29.0%; width: 48%; height: 23%; }
+	
+    .spot-room2-1   { top: 20%; left: 19%; width: 17%; height: 43%; }
+    .spot-room2-2   { top: 15%; left: 68%; width: 14%; height: 30%; }
+    .spot-room2-3   { top: 30%; left: 34%; width: 24%; height: 40%; }
+    .spot-room2-4   { top: 46%; left: 57%; width: 22%; height: 38%; }
+    /* ===== 三角矢印 ===== */
+    .slide-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-style: solid;
+      cursor: pointer;
+      transition: 0.25s;
+      background: none;
+      z-index: 20;
+    }
+
+    .left-btn {
+      left: 20px;
+      border-width: 25px 30px 25px 0;
+      border-color: transparent #fff transparent transparent;
+    }
+
+    .right-btn {
+      right: 20px;
+      border-width: 25px 0 25px 30px;
+      border-color: transparent transparent transparent #fff;
+    }
+
+    .left-btn:hover {
+      border-color: transparent #ff7eb9 transparent transparent;
+    }
+
+    .right-btn:hover {
+      border-color: transparent transparent transparent #ff7eb9;
+    }
+
+    /* ===== アニメーション（一方向に流れるスライド） ===== */
+    .to-left-out { animation: slideToLeftOut 0.3s forwards ease-in-out; }
+    .to-left-in  { animation: slideToLeftIn 0.3s forwards ease-in-out; }
+
+    @keyframes slideToLeftOut {
+      from { transform: translateX(0); opacity: 1; }
+      to   { transform: translateX(-100%); opacity: 0; }
+    }
+    @keyframes slideToLeftIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    .to-right-out { animation: slideToRightOut 0.3s forwards ease-in-out; }
+    .to-right-in  { animation: slideToRightIn 0.3s forwards ease-in-out; }
+
+    @keyframes slideToRightOut {
+      from { transform: translateX(0); opacity: 1; }
+      to   { transform: translateX(100%); opacity: 0; }
+    }
+    @keyframes slideToRightIn {
+      from { transform: translateX(-100%); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999; /* ← これが必要！ */
+    }
+
+    #overlay img {
+      max-width: 65%;
+      height: auto;
+      display: block; /* ← これも必要 */
+    }
+/* ===== スマホなどの画面が狭いときの調整 ===== */
+@media (max-width: 768px) {
+  /* 1. ゲーム一覧メニューをもっと小さくする */
+  .game-menu {
+    width: 110px;            /* さらにスリムに（例: 110px または 100px） */
+  }
+  .game-menu li a {
+    font-size: 10px;         /* 文字をさらに小さく（10px） */
+    padding: 3px 5px;        /* 余白も詰める */
+  }
+
+  /* 2. ホットスポットのホバー時に出るラベル（吹き出し）の文字を小さくする */
+  .hotspot::after {
+    font-size: 11px;         /* 吹き出しの文字サイズを小さく */
+    padding: 4px 8px;        /* 吹き出しの余白を縮める */
+  }
+
+  /* 3. 左右のスライド矢印（◀ ▶）をもっと小さくする場合 */
+  .slide-btn.left-btn {
+    border-width: 12px 16px 12px 0;  /* さらに小さく */
+    left: 8px;
+  }
+  .slide-btn.right-btn {
+    border-width: 12px 0 12px 16px;  /* さらに小さく */
+    right: 8px;
+  }
+  
+}
+  </style>
+</head>
+<body>
+<!-- レイヤーは1個だけ -->
+<div id="overlay" class="overlay">
+  <img id="pageImage" src="" alt="詳細ページ">
+</div>
+
+  <div class="slider-container">
+    <button class="slide-btn left-btn"></button>
+
+    <div class="image-wrapper">
+      <div id="scene" class="scene"></div>
+    </div>
+
+    <button class="slide-btn right-btn"></button>
+  </div>
+
+  <script>
+    const imgPath = "/img/retoro/";
+    const openMenu1 = `
+      <div class="game-menu menu-right">
+        <ul>
+          <li><a href="https://studioysn-web.github.io/zero/game/shooting/battleShoot.html">バトラーズショット</a></li>
+        </ul>
+      </div>
+    `;
+
+    const openMenu2 = `
+      <div class="game-menu menu-right">
+        <ul>
+          <li><a href="https://studioysn-web.github.io/zero/game/galaxy/galaxyNova.html">ノヴァギャラクシィ</a></li>
+          <li><a href="https://studioysn-web.github.io/zero/game/destroying/powerGrutton.html">襲撃のグラットン</a></li>
+        </ul>
+      </div>
+    `;
+    
+    const openMenu3 = `
+      <div class="game-menu menu-right">
+        <ul>
+          <li><a href="https://studioysn-web.github.io/zero/game/theGetSplot/getTheSplot.html">怪盗スプロット</a></li>
+          <li><a href="https://studioysn-web.github.io/zero/game/shogi/shogi.html">バトラーズ将棋</a></li>
+        </ul>
+      </div>
+    `;
+    
+    const openMenu4 = `
+      <div class="game-menu menu-right">
+        <ul>
+          <li><a href="https://studioysn-web.github.io/zero/game/leonrpg/index.html">レオンアドベンチャー</a></li>
+        </ul>
+      </div>
+    `;
+
+    // ★一番右のスポット専用のメニュー（クラス名に menu-right-special を指定）
+    const openMenu5 = `
+      <div class="game-menu menu-right-special">
+        <ul>
+          <li><a href="#" class="detail" data-type="detailSLeonRpg">【説明書】レオンアドベンチャー</a></li>
+          <li><a href="#" class="detail" data-type="detailKLeonRpg">【攻略本】レオンアドベンチャー</a></li>
+        </ul>
+      </div>
+    `;
+        
+    // 下向きにメニューを出したいときの書き方例
+    const openMenuStoryA = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="game1.html">世界観</a></li>
+          <li><a href="game2.html">キャラ紹介</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory1 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/1/">episode 1</a></li>
+          <li><a href="https://note.com/real_carp3092/n/na82b3b6853ef?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory2 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/2/">episode 2</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n06c74f1fa011?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory3 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/3/">episode 3</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n8e2a78b65eeb?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory4 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/4/">episode 4</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n7778f776d45e?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory5 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/5/">episode 5</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n39f18352a31b?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory6 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/6/">episode 6</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n8e3c530d2138?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory7 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/7/">episode 7</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n5d33f9e5f2e6?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory8 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/8/">episode 8</a></li>
+          <li><a href="https://note.com/real_carp3092/n/nf67a219204d5?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory9 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/9/">episode 9</a></li>
+          <li><a href="https://note.com/real_carp3092/n/nfec290ede851?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory10 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/10/">episode 10</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n749ddebb4549?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory11 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/11/">episode 11</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n707941ca9d7f?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory12 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/12/">episode 12</a></li>
+          <li><a href="https://note.com/real_carp3092/n/nb586e7a0fef2?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory13 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/13/">episode 13</a></li>
+          <li><a href="https://note.com/real_carp3092/n/na6e38982fd38?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory14 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/14/">episode 14</a></li>
+          <li><a href="https://note.com/real_carp3092/n/na06389244102?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory15 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/15/">episode 15</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n53eab89c9c28?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory16 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/16/">episode 16</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n7a0481a88393?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory17 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/17/">episode 17</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n2b4987415bfd?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory18 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/18/">episode 18</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n1f2dbd6516b0?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory19 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/19/">episode 19</a></li>
+          <li><a href="https://note.com/real_carp3092/n/nf203cb6435b1?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory20 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/20/">episode 20</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n72836bef14cb?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory21 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/21/">episode 21</a></li>
+          <li><a href="https://note.com/real_carp3092/n/na1d0d3918a28?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory22 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/22/">episode 22</a></li>
+          <li><a href="https://note.com/real_carp3092/n/ne09f40d73806?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory23 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/23/">episode 23</a></li>
+          <li><a href="https://note.com/real_carp3092/n/na5398b4b6bda?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory24 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/24/">episode 24</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n98d72895c736?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+    const openMenuStory25 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="https://ncode.syosetu.com/n3196lt/25/">episode 25</a></li>
+          <li><a href="https://note.com/real_carp3092/n/n74f6f73c5dd6?magazine_key=mdfb952472f02">あらすじ</a></li>
+        </ul>
+      </div>
+    `;
+
+    const openMenuAnv2 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="#" class="detail" data-type="detail2">詳細</a></li>
+          <li><a href="https://minne.com/@studioysn/series/167713">商品一覧</a></li>
+        </ul>
+      </div>
+    `;
+
+    const openMenuAnv1 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="#" class="detail" data-type="detail1">詳細</a></li>
+          <li><a href="https://minne.com/@studioysn/series/167715">商品一覧</a></li>
+        </ul>
+      </div>
+    `;
+
+    const openMenuAnv1_5 = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="#" class="detail" data-type="detail3">詳細</a></li>
+          <li><a href="https://minne.com/@studioysn/series/167714">商品一覧</a></li>
+        </ul>
+      </div>
+    `;
+
+    const openMenuTera = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="#" class="detail" data-type="detailTera">詳細</a></li>
+          <li><a href="https://minne.com/@studioysn/series/150695">商品一覧</a></li>
+        </ul>
+      </div>
+    `;
+
+    const rooms = [
+      {
+        img: imgPath + "room0.png",   // 0番: 左の部屋
+        hotspots: `
+          <div class="hotspot spot-room0-1" data-label="表に出る" data-link="index.html"></div>
+          <div class="hotspot spot-room0-2" data-label="ゲーム機で遊ぶ">${openMenu1}</div>
+          <div class="hotspot spot-room0-3" data-label="ゲーム機で遊ぶ">${openMenu2}</div>
+          <div class="hotspot spot-room0-4" data-label="ゲーム機で遊ぶ">${openMenu3}</div>
+          <div class="hotspot spot-room0-5" data-label="ゲーム機で遊ぶ">${openMenu4}</div>
+          <div class="hotspot spot-room0-6" data-label="攻略本を見る">${openMenu5}</div>
+        `
+      },
+      {
+        img: imgPath + "room1.png", // 1番: 中央の部屋
+        hotspots: `
+        <div class="hotspot spot-room1-0" data-label="表に出る" data-link="index.html"></div>
+        <div class="hotspot spot-room1-A" data-label="after 100 years">${openMenuStoryA}</div>
+        <div class="hotspot spot-room1-1" data-label="after 100 years(1)">${openMenuStory1}</div>
+        <div class="hotspot spot-room1-2" data-label="after 100 years(2)">${openMenuStory2}</div>
+        <div class="hotspot spot-room1-3" data-label="after 100 years(3)">${openMenuStory3}</div>
+        <div class="hotspot spot-room1-4" data-label="after 100 years(4)">${openMenuStory4}</div>
+        <div class="hotspot spot-room1-5" data-label="after 100 years(5)">${openMenuStory5}</div>
+        <div class="hotspot spot-room1-6" data-label="after 100 years(6)">${openMenuStory6}</div>
+        <div class="hotspot spot-room1-7" data-label="after 100 years(7)">${openMenuStory7}</div>
+        <div class="hotspot spot-room1-8" data-label="after 100 years(8)">${openMenuStory8}</div>
+        <div class="hotspot spot-room1-9" data-label="after 100 years(9)">${openMenuStory9}</div>
+        <div class="hotspot spot-room1-10" data-label="after 100 years(10)">${openMenuStory10}</div>
+        <div class="hotspot spot-room1-11" data-label="after 100 years(11)">${openMenuStory11}</div>
+        <div class="hotspot spot-room1-12" data-label="after 100 years(12)">${openMenuStory12}</div>
+        <div class="hotspot spot-room1-13" data-label="after 100 years(13)">${openMenuStory13}</div>
+        <div class="hotspot spot-room1-14" data-label="after 100 years(14)">${openMenuStory14}</div>
+        <div class="hotspot spot-room1-15" data-label="after 100 years(15)">${openMenuStory15}</div>
+        <div class="hotspot spot-room1-16" data-label="after 100 years(16)">${openMenuStory16}</div>
+        <div class="hotspot spot-room1-17" data-label="after 100 years(17)">${openMenuStory17}</div>
+        <div class="hotspot spot-room1-18" data-label="after 100 years(18)">${openMenuStory18}</div>
+        <div class="hotspot spot-room1-19" data-label="after 100 years(19)">${openMenuStory19}</div>
+        <div class="hotspot spot-room1-20" data-label="after 100 years(20)">${openMenuStory20}</div>
+        <div class="hotspot spot-room1-21" data-label="after 100 years(21)">${openMenuStory21}</div>
+        <div class="hotspot spot-room1-22" data-label="after 100 years(22)">${openMenuStory22}</div>
+        <div class="hotspot spot-room1-23" data-label="after 100 years(23)">${openMenuStory23}</div>
+        <div class="hotspot spot-room1-24" data-label="after 100 years(24)">${openMenuStory24}</div>
+        <div class="hotspot spot-room1-25" data-label="after 100 years(25)">${openMenuStory25}</div>
+        
+        <div class="hotspot spot-room1-anv-2" data-label="2周年記念">${openMenuAnv2}</div>
+        <div class="hotspot spot-room1-anv-1" data-label="1周年記念">${openMenuAnv1}</div>
+        <div class="hotspot spot-room1-anv-1-5" data-label="1.5周年記念">${openMenuAnv1_5}</div>
+        `
+      },
+      {
+        img: imgPath + "room2.png", // 2番: 右の部屋
+        hotspots: `
+        <div class="hotspot spot-room2-1" data-label="studio Y.S.N アパレルグッズを見る" data-link="https://minne.com/@studioysn/series/167711"></div>
+        <div class="hotspot spot-room2-3" data-label="studio Y.S.N アパレルグッズを見る" data-link="https://minne.com/@studioysn/series/167711"></div>
+        <div class="hotspot spot-room2-4" data-label="てらしちずんずを見る">${openMenuTera}</div>
+        <div class="hotspot spot-room2-2" data-label="studio Y.S.N アパレルグッズを見る" data-link="https://minne.com/@studioysn/series/167711"></div>
+        `
+      }
+    ];
+// --- URLパラメータの取得 ---
+const urlParams = new URLSearchParams(window.location.search);
+const roomParam = urlParams.get('room');
+
+let current = roomParam !== null ? parseInt(roomParam, 10) : 1;
+if (isNaN(current) || current < 0 || current >= rooms.length) {
+  current = 1;
+}
+
+const scene = document.getElementById("scene");
+const leftBtn = document.querySelector(".left-btn");
+const rightBtn = document.querySelector(".right-btn");
+
+// --- 部屋描画 ---
+function renderRoom(index) {
+  const room = rooms[index];
+  scene.innerHTML = `
+    <img src="${room.img}" alt="room" class="main-image">
+    ${room.hotspots}
+  `;
+  bindHotspotEvents();
+}
+
+// --- ホットスポットイベント ---
+function bindHotspotEvents() {
+  document.querySelectorAll('.hotspot').forEach(el => {
+    el.addEventListener('click', (e) => {
+
+      // ▼ detail をクリックしたらホットスポット処理を止める
+      if (e.target.closest(".detail")) {
+        return;
+      }
+
+      const link = el.getAttribute('data-link');
+
+      if (link) {
+        window.location.href = link;
+      } else {
+        e.stopPropagation();
+
+        document.querySelectorAll('.hotspot').forEach(other => {
+          if (other !== el) other.classList.remove('is-open');
+        });
+
+        el.classList.toggle('is-open');
+      }
+    });
+  });
+}
+
+// --- ホットスポット外側クリックで閉じる（1回だけ登録） ---
+document.addEventListener('click', (e) => {
+
+  // ▼ detail をクリックしたら閉じる処理を止める
+  if (e.target.closest(".detail")) {
+    return;
+  }
+
+  document.querySelectorAll('.hotspot').forEach(el => {
+    el.classList.remove('is-open');
+  });
+});
+
+// --- スライド処理 ---
+function updateImage(direction) {
+  if (direction === "left" && current === 0) {
+    window.location.href = "index.html";
+    return;
+  }
+  if (direction === "right" && current === rooms.length - 1) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  const outClass = direction === "left" ? "to-right-out" : "to-left-out";
+  const inClass  = direction === "left" ? "to-right-in"  : "to-left-in";
+
+  scene.className = "scene " + outClass;
+
+  setTimeout(() => {
+    current += (direction === "left" ? -1 : 1);
+    renderRoom(current);
+    scene.className = "scene " + inClass;
+  }, 300);
+
+  setTimeout(() => {
+    scene.className = "scene";
+  }, 600);
+}
+
+leftBtn.addEventListener("click", () => updateImage("left"));
+rightBtn.addEventListener("click", () => updateImage("right"));
+
+// --- 初期描画 ---
+renderRoom(current);
+
+// --- 5種類のページ配列 ---
+const pagesSets = {
+  detail1: ["img/retoro/anv1.png"],
+  detail2: ["img/retoro/anv2.png"],
+  detail3: ["img/retoro/anv1-5.png"],
+  detailTera: ["img/retoro/teracitizens.png"], 
+  detailSLeonRpg: ["img/retoro/r_s_0.png", "img/retoro/r_s_1.png", "img/retoro/r_s_2.png", "img/retoro/r_s_3.png", "img/retoro/r_s_4.png"],
+  detailKLeonRpg: ["img/retoro/coming-soon.png"]
+};
+
+let pointa = 0;
+let activePages = [];
+const overlay = document.getElementById("overlay");
+const img = document.getElementById("pageImage");
+
+// --- detail クリックで overlay 表示（イベント委譲） ---
+document.addEventListener("click", e => {
+  const el = e.target.closest(".detail");
+  if (!el) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const type = el.dataset.type;
+  activePages = pagesSets[type];
+  pointa = 0;
+
+  img.src = activePages[0];
+  img.style.display = "block";   // ← これが必要！
+
+  overlay.style.display = "flex";
+});
+
+
+// --- overlay 背景クリックで閉じる ---
+overlay.addEventListener("click", e => {
+  if (e.target.id === "overlay") overlay.style.display = "none";
+});
+
+// --- ページ切り替え ---
+function showPage(next) {
+  if (next < 0 || next >= activePages.length) return;
+  const direction = next > pointa ? "slide-left" : "slide-right";
+  img.classList.add(direction);
+  setTimeout(() => {
+    img.src = activePages[next];
+    img.classList.remove(direction);
+  }, 300);
+  pointa = next;
+}
+
+// --- クリックで左右めくり ---
+img.addEventListener("click", e => {
+  const rect = img.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  if (x < rect.width / 2) showPage(pointa - 1);
+  else showPage(pointa + 1);
+});
+
+// --- フリック対応 ---
+let startX = 0;
+img.addEventListener("touchstart", e => startX = e.touches[0].clientX);
+img.addEventListener("touchend", e => {
+  const endX = e.changedTouches[0].clientX;
+  const diff = endX - startX;
+  if (diff > 50) showPage(pointa - 1);
+  if (diff < -50) showPage(pointa + 1);
+});
+
+
+
+  </script>
+
+</body>
+</html>

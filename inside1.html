@@ -228,7 +228,8 @@
 	.spot-room1-anv-2 { top: 48%; left: 29.0%; width: 26%; height: 23%; }
 	.spot-room1-anv-1 { top: 48%; left: 55.0%; width: 22%; height: 23%; }
 	.spot-room1-anv-1-5 { top: 75%; left: 29.0%; width: 48%; height: 23%; }
-	
+	.spot-room1-tumipla { top: 72%; left: 5.0%; width: 14%; height: 23%; }
+
     .spot-room2-1   { top: 20%; left: 19%; width: 17%; height: 43%; }
     .spot-room2-2   { top: 15%; left: 68%; width: 14%; height: 30%; }
     .spot-room2-3   { top: 30%; left: 34%; width: 24%; height: 40%; }
@@ -636,6 +637,15 @@
       </div>
     `;
 
+    const openMenuTumiPla = `
+      <div class="game-menu menu-bottom">
+        <ul>
+          <li><a href="#" class="detail" data-type="detail4">詳細</a></li>
+          <li><a href="https://minne.com/@studioysn/series/168835">商品一覧</a></li>
+        </ul>
+      </div>
+    `;
+    
     const openMenuTera = `
       <div class="game-menu menu-bottom">
         <ul>
@@ -691,6 +701,7 @@
         <div class="hotspot spot-room1-anv-2" data-label="2周年記念">${openMenuAnv2}</div>
         <div class="hotspot spot-room1-anv-1" data-label="1周年記念">${openMenuAnv1}</div>
         <div class="hotspot spot-room1-anv-1-5" data-label="1.5周年記念">${openMenuAnv1_5}</div>
+        <div class="hotspot spot-room1-tumipla" data-label="詰みプラ">${openMenuTumiPla}</div>
         `
       },
       {
@@ -804,6 +815,7 @@ const pagesSets = {
   detail1: ["img/retoro/anv1.png"],
   detail2: ["img/retoro/anv2.png"],
   detail3: ["img/retoro/anv1-5.png"],
+  detail4: ["img/retoro/tumipla.png"],
   detailTera: ["img/retoro/teracitizens.png"], 
   detailSLeonRpg: ["img/retoro/r_s_0.png", "img/retoro/r_s_1.png", "img/retoro/r_s_2.png", "img/retoro/r_s_3.png", "img/retoro/r_s_4.png"],
   detailKLeonRpg: ["img/retoro/coming-soon.png"],

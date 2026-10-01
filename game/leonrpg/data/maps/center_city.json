@@ -119,7 +119,7 @@
       "talk": [
         {
           "require":{"char_center_city_05_08":true},
-          "text": "[まち人]\nいつか船にのって、かき氷の大陸にいくんだ～。"
+          "text": "[まち人]\n東の船着き場から真っ直ぐ北\nまずはヴィレンダルに\n向かうといいよ。"
         },
         {
           "eventId":{"char_center_city_05_08":true},

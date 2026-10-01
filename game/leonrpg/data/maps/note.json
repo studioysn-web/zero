@@ -67,13 +67,18 @@
     "move": "free",
       "talk": [
         {
-          "require": { "name201": true },
-          "eventId":{"name201":false},
-          "text": "[ミュウ・アーカイバー]\nちょっとまってね。\nたしかこっちにメガドラ系のやつが・・・\n昔の記憶を保管する仕事をしてるのさ。"
+          "require": { "name201-2": true },
+          "eventId":{"name201-1":false, "name201-2":false},
+          "text": "[ミュウ・アーカイバー]\n記憶を保管・発掘する仕事をしてるニャス。"
         },
         {
-          "eventId":{"name201":true},
-          "text": "[ミュウ・アーカイバー]\nやぁ。え？\n何年のゲームについて知りたいって？"
+          "require": { "name201-1": true },
+          "eventId":{"name201-1":true},
+          "text": "[ミュウ・アーカイバー]\n何年のゲームについて知りたいニャス？"
+        },
+        {
+          "eventId":{"name201-1":true},
+          "text": "[ミュウ・アーカイバー]\nハローえぶりにゃす！\nM.Y.U(みゅう)です!\n今日も記憶発掘するニャス！"
         }
       ]
   },

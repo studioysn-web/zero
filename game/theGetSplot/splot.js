@@ -129,7 +129,7 @@
   let reachedStart = false;
 
   let score = 0;
-  let highScore = Number(localStorage.getItem('maze_goal_highscore') || 0);
+  let highScore = 0;
   let stage = 1;
   let timeLeft = STAGE_TIME;
   let gameOver = false;
@@ -428,6 +428,11 @@
       highScore = score;
       localStorage.setItem('maze_goal_highscore', highScore);
     }
+
+    const panel = document.getElementById("scoreEntry");
+    panel.style.display = "block";   // ★ これが表示トリガー
+    panel.dataset.score = score;
+
   }
 
   // ---------------------------------------------------------
@@ -823,24 +828,35 @@
   // ---------------------------------------------------------
   // START ボタン
   // ---------------------------------------------------------
-function startGame(){
-    // ▼ ゲームオーバー後の再スタート対応
-    if (gameOver) {
-        resetGame();
-        gameOver = false;
-    }
+async function startGame() {
+  // ★ Supabaseからハイスコア取得
+  window.highScore = await window.loadHighScore();
+  highScore = window.highScore;
+  //console.log("現在のハイスコア:", window.highScore); // ←確認用ログ
 
-    if (gameStarted) return;
+  // ▼ ゲームオーバー後の再スタート対応
+  if (gameOver) {
+    resetGame();
+    gameOver = false;
+  }
 
-    gameStarted = true;
-    startStage();
+  if (gameStarted) return;
+
+  gameStarted = true;
+  startStage();
 }
 
 
-  document.getElementById("startButton").addEventListener("click", startGame);
-  canvas.addEventListener("click", () => {
-    if (!gameStarted) startGame();
-  });
+
+ document.getElementById("startButton").addEventListener("click", startGame);
+
+  // ★ module が読み込まれるまで少し待つ
+  setTimeout(() => {
+    canvas.addEventListener("click", () => {
+      if (!gameStarted) startGame();
+    });
+  }, 100);
+
 
   // ---------------------------------------------------------
   // D-Pad（上下左右）

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>スコア登録</title>
+</head>
+<body>
+
+<h2>スコア登録フォーム</h2>
+
+<form id="scoreForm">
+  <label>ユーザID（必須・10文字以内）</label><br>
+  <input type="text" id="userId" maxlength="10" required><br><br>
+
+  <label>スコア（必須・数字）</label><br>
+  <input type="number" id="score" required><br><br>
+
+  <button type="submit">登録する</button>
+</form>
+
+<div id="result"></div>
+
+<hr>
+
+<h2>🏆 現在のランキング（上位3位）</h2>
+<div id="ranking"></div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+// ★ Supabase 接続情報
+const supabase = createClient(
+  "https://gsgtgryjwdqhzzbcbssy.supabase.co",
+  "sb_publishable_yM2UbH1x_AzebIX5WECr-w_-WbVIGrb"
+);
+
+// ▼ ランキング取得関数（上位3件）
+async function loadRanking() {
+  const { data, error } = await supabase
+    .from("studio_ysn_table")
+    .select("*")
+    .order("SCORE", { ascending: false })
+    .limit(3);
+
+  if (error) {
+    document.getElementById("ranking").innerText = "ランキング取得失敗: " + error.message;
+    return;
+  }
+
+  // ▼ 表示整形
+  let html = "<ol>";
+  data.forEach(row => {
+    html += `<li>${row.USERID}：${row.SCORE} 点</li>`;
+  });
+  html += "</ol>";
+
+  document.getElementById("ranking").innerHTML = html;
+}
+
+// ▼ フォーム送信イベント
+document.getElementById("scoreForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const userId = document.getElementById("userId").value.trim();
+  const score = Number(document.getElementById("score").value);
+
+  // ▼ バリデーション
+  if (!userId || userId.length > 10) {
+    document.getElementById("result").innerText = "ユーザIDは必須で10文字以内です。";
+    return;
+  }
+  if (isNaN(score)) {
+    document.getElementById("result").innerText = "スコアは数字で入力してください。";
+    return;
+  }
+
+  // ▼ Supabase に登録
+  const { data, error } = await supabase
+    .from("studio_ysn_table")
+    .insert([
+      {
+        GAMEID: 0,
+        USERID: userId,
+        SCORE: score,
+        ENTRYTIME: new Date().toISOString()
+      }
+    ]);
+
+  if (error) {
+    document.getElementById("result").innerText = "登録失敗: " + error.message;
+  } else {
+    document.getElementById("result").innerText = "登録成功！";
+
+    // ★ 登録後にランキングを最新化
+    loadRanking();
+  }
+});
+
+// ★ ページ読み込み時にランキング表示
+loadRanking();
+
+</script>
+
+</body>
+</html>

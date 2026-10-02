@@ -1,4 +1,4 @@
-const imgPath = "/zero/game/destroying/img/";
+const imgPath = "./img/";
 
 function drawLoadingScreen() {
   ctx.fillStyle = "black";
@@ -43,7 +43,7 @@ let gameStarted = false;
 let gameOver = false;
 
 let score = 0;
-let highScore = Number(localStorage.getItem("highScore") || 0);
+let highScore = 0;
 let newRecord = false;
 
 let keys = {};
@@ -285,6 +285,7 @@ function drawTitleScreen() {
 
 // ====== 更新 ======
 function update() {
+  
   // ★ 1. gameOver を最優先で描画
   if (gameOver) {
     draw();
@@ -485,6 +486,7 @@ ctx.fillRect(0, 0, canvas.width, 80);
   }
   // ====== GAME OVER ======
   if (gameOver) {
+
     ctx.fillStyle = "rgba(0,0,0,0.7)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -530,6 +532,10 @@ function startTimer() {
       }
 
       clearInterval(timerInterval);
+      const panel = document.getElementById("scoreEntry");
+      panel.style.display = "block";
+      panel.dataset.score = score;
+
     }
   }, 1000);
 }
@@ -570,11 +576,18 @@ function resetGame() {
 
 
 // ====== START ======
-document.getElementById("startBtn").addEventListener("click", () => {
+document.getElementById("startBtn").addEventListener("click", async () => {
   resetGame();
+
+  // ★ Supabase からハイスコアを1回だけ取得
+  window.highScore = await window.loadHighScore();
+  highScore = window.highScore;
+
   gameStarted = true;
   startTimer();
 });
+
+
 
 
 // ====== 完全アンロード ======

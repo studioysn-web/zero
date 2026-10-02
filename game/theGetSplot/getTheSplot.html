@@ -171,30 +171,73 @@ body.mobile #pad-horizontal {
   bottom: 800px;   /* ← スマホ専用の高さ（自由に調整） */
 }
 
-</style>
+  /* ▼ スコア登録パネルのボタン統一 */
+  .score-btn {
+    width: 220px;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: block;      /* ← 縦並びにする */
+    margin-left: auto;
+    margin-right: auto;  /* ← 中央寄せ */
+    background: #4CAF50; /* 緑（登録ボタン） */
+    color: white;
+  }
 
+  .score-btn.cancel {
+    background: #d9534f; /* 赤（キャンセルボタン） */
+  }
+</style>
 </head>
 
 <body>
 
 <div id="gameArea">
 
-  <!-- ▼ 閉じるボタン -->
   <div class="close-tab-btn" onclick="window.close()">× CLOSE</div>
 
-  <!-- ▼ START ボタン -->
   <button id="startButton">ゲーム開始</button>
 
-  <!-- ▼ ゲームキャンバス -->
   <canvas id="game" width="900" height="700"></canvas>
 
-  <!-- ▼ 左側：上下 -->
+  <!-- ▼ スコア登録パネル -->
+  <div id="scoreEntry"
+       style="position:absolute; top:75%; left:50%;
+              transform:translate(-50%, -50%);
+              background:rgba(0,0,0,0.85);
+              padding:20px; color:white;
+              border:2px solid #fff;
+              border-radius:10px;
+              display:none; z-index:99999;
+              text-align:center;">
+
+    <div style="font-size:20px; margin-bottom:10px;">
+      名前を入力してください
+    </div>
+
+    <input type="text" id="userName" maxlength="10"
+           style="font-size:20px; padding:5px; width:200px;"><br><br>
+
+    <button id="registerScoreBtn" class="score-btn">
+      このスコアを登録
+    </button>
+
+    <button id="cancelScoreBtn" class="score-btn cancel">
+      キャンセル
+    </button>
+
+    <div id="scoreEntryResult" style="margin-top:10px; font-size:16px;"></div>
+  </div>
+
   <div id="pad-vertical">
     <button id="btn-up">↑</button>
     <button id="btn-down">↓</button>
   </div>
 
-  <!-- ▼ 右側：左右 -->
   <div id="pad-horizontal">
     <button id="btn-left">←</button>
     <button id="btn-right">→</button>
@@ -203,9 +246,6 @@ body.mobile #pad-horizontal {
 </div>
 
 <script>
-/* ==========================================
-   ▼ スマホ判定 → body にクラス付与
-========================================== */
 if (/Android.+Mobile|iPhone|iPad|iPod/.test(navigator.userAgent)) {
   document.body.classList.add("mobile");
 } else {
@@ -213,6 +253,67 @@ if (/Android.+Mobile|iPhone|iPad|iPod/.test(navigator.userAgent)) {
 }
 </script>
 
+<!-- ★ Supabase と loadHighScore を先に読み込む -->
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+  const supabase = createClient(
+    "https://gsgtgryjwdqhzzbcbssy.supabase.co",
+    "sb_publishable_yM2UbH1x_AzebIX5WECr-w_-WbVIGrb"
+  );
+
+  window.loadHighScore = async function () {
+    
+    const { data, error } = await supabase
+      .from("studio_ysn_table")
+      .select("SCORE")
+      .eq("GAMEID", 3)
+      .not("SCORE", "is", null)   // ★ null除外
+      .order("SCORE", { ascending: false })
+      .limit(1);
+
+    if (error || !data || data.length === 0) return 0;
+    console.log(data[0].SCORE);
+    return data[0].SCORE;
+  };
+
+  document.getElementById("registerScoreBtn").addEventListener("click", async () => {
+    const name = document.getElementById("userName").value.trim();
+    const panel = document.getElementById("scoreEntry");
+    const score = Number(panel.dataset.score);
+
+    if (!name) {
+      document.getElementById("scoreEntryResult").innerText = "名前を入力してください。";
+      return;
+    }
+
+    const { error } = await supabase
+      .from("studio_ysn_table")
+      .insert([
+        {
+          GAMEID: 3,
+          USERID: name,
+          SCORE: score,
+          ENTRYTIME: new Date().toISOString()
+        }
+      ]);
+
+    if (error) {
+      document.getElementById("scoreEntryResult").innerText = "登録失敗: " + error.message;
+    } else {
+      window.highScore = await window.loadHighScore();
+      panel.style.display = "none";
+    }
+  });
+
+  document.getElementById("cancelScoreBtn").addEventListener("click", () => {
+    document.getElementById("scoreEntry").style.display = "none";
+    document.getElementById("scoreEntryResult").innerText = "";
+  });
+</script>
+
+<!-- ★ ゲームロジックは必ず最後に読み込む -->
 <script src="./splot.js"></script>
+
 </body>
 </html>

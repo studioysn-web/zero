@@ -137,6 +137,27 @@ canvas {
     font-size: 28px;
   }
 }
+  /* ▼ スコア登録パネルのボタン統一 */
+  .score-btn {
+    width: 220px;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: block;      /* ← 縦並びにする */
+    margin-left: auto;
+    margin-right: auto;  /* ← 中央寄せ */
+    background: #4CAF50; /* 緑（登録ボタン） */
+    color: white;
+  }
+
+  .score-btn.cancel {
+    background: #d9534f; /* 赤（キャンセルボタン） */
+  }
+
 </style>
 </head>
 
@@ -163,24 +184,44 @@ style="
 ・矢印キー上下で移動<br>
 ・Zキーで攻撃
 </td>
-<td id="hi-score"></td>
 </tr>
 </table>
 
 <!-- ▼ ゲーム画面 -->
 <canvas id="gameCanvas" width="800" height="600"></canvas>
+<!-- ▼ GAME OVER 時に表示する名前入力パネル -->
+<div id="scoreEntry"
+     style="position:absolute; top:75%; left:50%;
+            transform:translate(-50%, -50%);
+            background:rgba(0,0,0,0.85);
+            padding:20px; color:white;
+            border:2px solid #fff;
+            border-radius:10px;
+            display:none; z-index:99999;
+            text-align:center;">
+
+  <div style="font-size:20px; margin-bottom:10px;">
+    名前を入力してください
+  </div>
+
+  <input type="text" id="userName" maxlength="10"
+         style="font-size:20px; padding:5px; width:200px;"><br><br>
+
+  <button id="registerScoreBtn" class="score-btn">
+    スコア登録
+  </button>
+
+  <button id="cancelScoreBtn" class="score-btn cancel">
+    キャンセル
+  </button>
+
+
+
+  <div id="scoreEntryResult" style="margin-top:10px; font-size:16px;"></div>
+</div>
 
 <script src="shoot.js?v=2025110202"></script>
-
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const img = new Image();
-img.src = './img/start_scr.png';
-
-img.onload = () => {
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-};
 
 /* ▼ 長押し対策つきボタンバインド */
 function bindButton(selector, key) {
@@ -228,6 +269,71 @@ bindButton("#shoot", "z");
 
 </div>
 <!-- ▲▲▲ ゲーム全体ラッパー終了 ▲▲▲ -->
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+// ★ Supabase 接続
+const supabase = createClient(
+  "https://gsgtgryjwdqhzzbcbssy.supabase.co",
+  "sb_publishable_yM2UbH1x_AzebIX5WECr-w_-WbVIGrb"
+);
+
+// ★ ハイスコア取得
+window.loadHighScore = async function () {
+  const { data, error } = await supabase
+    .from("studio_ysn_table")
+    .select("SCORE")
+    .eq("GAMEID", 1)
+    .not("SCORE", "is", null)   // ★ null除外
+    .order("SCORE", { ascending: false })
+    .limit(1);
+
+  if (error || !data || data.length === 0) return 0;
+  return data[0].SCORE;
+};
+
+// ★ スコア登録ボタン
+document.getElementById("registerScoreBtn").addEventListener("click", async () => {
+  const name = document.getElementById("userName").value.trim();
+  const panel = document.getElementById("scoreEntry");
+  const score = Number(panel.dataset.score);
+
+  if (!name) {
+    document.getElementById("scoreEntryResult").innerText = "名前を入力してください。";
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("studio_ysn_table")
+    .insert([
+      {
+        GAMEID: 1,
+        USERID: name,
+        SCORE: score,
+        ENTRYTIME: new Date().toISOString()
+      }
+    ]);
+
+  if (error) {
+    document.getElementById("scoreEntryResult").innerText = "登録失敗: " + error.message;
+  } else {
+    //document.getElementById("scoreEntryResult").innerText = "登録成功！";
+
+    // ★ ハイスコア再取得
+    window.highScore = await window.loadHighScore();
+
+    panel.style.display = "none";
+  }
+});
+
+// ★ キャンセルボタン
+document.getElementById("cancelScoreBtn").addEventListener("click", () => {
+  document.getElementById("scoreEntry").style.display = "none";
+  document.getElementById("scoreEntryResult").innerText = "";
+});
+</script>
+
+
 
 </body>
 </html>

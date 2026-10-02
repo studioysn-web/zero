@@ -149,17 +149,23 @@ window.onload = () => {
 //////////////////////////////////////////////////////////////
 // ★★★ ゲーム開始 ★★★
 //////////////////////////////////////////////////////////////
-function startGame() {
+async function startGame() {
     const startBtn = document.getElementById("startButton");
     if (startBtn && startBtn.disabled) return;
 
     if (gameLoopId) cancelAnimationFrame(gameLoopId);
 
-    loadHighScore();
+    // ★ Supabase からハイスコアを取得して画面に反映
+    if (window.loadHighScore) {
+        const hs = await window.loadHighScore();
+        document.getElementById("hi-score").innerText = `HIGH SCORE: ${hs}`;
+    }
+
     resetGame();
     gameStarted = true;
     gameLoop();
 }
+
 
 //////////////////////////////////////////////////////////////
 // ★★★ リセット ★★★
@@ -290,15 +296,25 @@ function drawBeams() {
 // ★★★ スコア表示 ★★★
 //////////////////////////////////////////////////////////////
 function drawScore() {
-    const hs = loadHighScore();
-
-    ctx.fillStyle = "red";
-    ctx.font = "18px Arial";
+    ctx.font = "bold 23px Arial";
     ctx.textAlign = "center";
-    ctx.fillText(`HIGH-SCORE: ${hs.score}`, canvas.width / 2, 20);
 
-    ctx.fillStyle = "white";
-    ctx.fillText(`現在のSCORE: ${score}`, canvas.width / 2, 40);
+    // ★ SCORE（中央上）
+    ctx.fillStyle = "#ec4abc";
+    ctx.fillText(`SCORE: ${score}`, canvas.width / 2, 50);
+
+     if (score > window.highScore) {
+        window.highScore = score;
+    }
+    // ★ HIGH SCORE（その上に赤で派手に）
+    if (window.highScore !== undefined) {
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = "black";
+        ctx.strokeText(`HIGH SCORE: ${window.highScore}`, canvas.width / 2, 22);
+
+        ctx.fillStyle = "#fc1414";
+        ctx.fillText(`HIGH SCORE: ${window.highScore}`, canvas.width / 2, 22);
+    }
 }
 
 function drawBossDefeatCount() {
@@ -595,24 +611,40 @@ function updateBoss() {
 //////////////////////////////////////////////////////////////
 // ★★★ ハイスコア保存・読み込み ★★★
 //////////////////////////////////////////////////////////////
-function saveHighScore(finalScore) {
-    const currentHighScore = Number(localStorage.getItem("highScore") || 0);
+// function saveHighScore(finalScore) {
+//     const currentHighScore = Number(localStorage.getItem("highScore") || 0);
 
-    if (finalScore > currentHighScore) {
-        localStorage.setItem("highScore", finalScore);
+//     if (finalScore > currentHighScore) {
+//         localStorage.setItem("highScore", finalScore);
+//     }
+// }
+
+// function loadHighScore() {
+//     return {
+//         score: Number(localStorage.getItem("highScore") || 0)
+//     };
+// }
+async function startGame() {
+    const startBtn = document.getElementById("startButton");
+    if (startBtn && startBtn.disabled) return;
+
+    if (gameLoopId) cancelAnimationFrame(gameLoopId);
+
+    // ★ Supabase のハイスコアを HTML 側から受け取る
+    let hs = 0;
+    if (window.loadHighScore) {
+        hs = await window.loadHighScore();
+        window.highScore = hs;
     }
+   
+    resetGame();
+    gameStarted = true;
+    gameLoop();
 }
 
-function loadHighScore() {
-    return {
-        score: Number(localStorage.getItem("highScore") || 0)
-    };
-}
 
-//////////////////////////////////////////////////////////////
-// ★★★ GAME OVER 画面（通常 → ボーナス → 合計 → ハイスコア） ★★★
-//////////////////////////////////////////////////////////////
-function displayGameOverOverlay() {
+async function displayGameOverOverlay() {
+
     ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -621,38 +653,41 @@ function displayGameOverOverlay() {
     ctx.textAlign = "center";
     ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 120);
 
-    // 撃破ボーナス
     const defeatBonus = bossDefeatCount * 2000;
     const finalScore = score + defeatBonus;
 
-    // 保存
-    saveHighScore(finalScore);
-
-    // 最新ハイスコア取得
-    const hs = loadHighScore();
-
     ctx.fillStyle = "white";
     ctx.font = "bold 30px Arial";
-
-    // ① 通常スコア
     ctx.fillText(`SCORE: ${score}`, canvas.width / 2, canvas.height / 2 - 40);
 
-    // ② ボス撃破ボーナス
     ctx.fillText(
         `BOSS BONUS: ${bossDefeatCount} × 2000 = ${defeatBonus}`,
         canvas.width / 2,
         canvas.height / 2 + 10
     );
 
-    // ③ 合計スコア
     ctx.fillText(`TOTAL: ${finalScore}`, canvas.width / 2, canvas.height / 2 + 60);
 
-    // ④ ハイスコア
+    // ★ Supabase のハイスコア取得
+    let highScore = 0;
+    if (window.loadHighScore) {
+        highScore = await window.loadHighScore();
+    }
+
     ctx.fillStyle = "yellow";
-    ctx.fillText(`HIGH SCORE: ${hs.score}`, canvas.width / 2, canvas.height / 2 + 120);
+    ctx.fillText(`HIGH SCORE: ${highScore}`, canvas.width / 2, canvas.height / 2 + 120);
 
     gameStarted = false;
+
+    const panel = document.getElementById("scoreEntry");
+    panel.style.display = "block";
+    panel.dataset.score = finalScore;
+
+    // ★ 結果欄をクリア
+    document.getElementById("scoreEntryResult").innerText = "";
+
 }
+
 
 //////////////////////////////////////////////////////////////
 // ★★★ スマホ操作（タッチ） ★★★

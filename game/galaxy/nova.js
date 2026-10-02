@@ -1,5 +1,5 @@
 document.getElementById("close-button").addEventListener("click", () => {
-  window.close(); // ← タブを閉じる（スマホブラウザは無視される場合あり）
+  window.history.back(); // ← タブを閉じる（スマホブラウザは無視される場合あり）
 });
 
 // ▼ スマホ判定
@@ -13,7 +13,7 @@ const scaleManager = {
 };
 
 // ====== 基本設定 ======
-const imgBasePath = "/zero/game/galaxy/img/";
+const imgBasePath = "./img/";
 
 // プレイヤー
 const playerImages = ["nova0.png", "nova1.png"];
@@ -311,12 +311,7 @@ function loadHighScore() {
   const v = localStorage.getItem("galaxy_invader_highscore");
   highScore = v ? parseInt(v, 10) : 0;
 }
-function saveHighScore() {
-  if (score > highScore) {
-    highScore = score;
-    localStorage.setItem("galaxy_invader_highscore", String(highScore));
-  }
-}
+
 // ====== resetGame ======
 function resetGame() {
   bullets = [];
@@ -353,11 +348,14 @@ function resetGame() {
 function triggerGameOver() {
   isGameOver = true;
   isGameRunning = false;
-  saveHighScore();
 
   finalScoreLabel.textContent = `SCORE: ${score}`;
   highScoreLabel.textContent = `HIGH SCORE: ${highScore}`;
   gameOverOverlay.style.display = "block";
+
+  const panel = document.getElementById("scoreEntry");
+  panel.style.display = "block";
+  panel.dataset.score = score;
 }
 
 // ====== update ======
@@ -599,19 +597,18 @@ function gameLoop(timestamp) {
 }
 
 // ====== クリックでゲーム開始 ======
-canvas.addEventListener("click", () => {
-  if (!gameStarted) {
-    gameStarted = true;
-    resetGame();
-  }
-});
-
-startButton.addEventListener("click", () => {
+startButton.addEventListener("click", async () => {
   if (!gameStarted) {
     gameStarted = true;   // ← これが無いとタイトルから進まない
+
+    // ★ Supabase からハイスコアを1回だけ取得（Promiseを解決する）
+    window.highScore = await window.loadHighScore();
+    highScore = window.highScore;
   }
+
   resetGame();
 });
+
 
 // ====== 起動 ======
 (async function main() {

@@ -1184,7 +1184,7 @@ document.getElementById("resetStatsBtn").onclick=()=>{
    CLOSE（タブは閉じられない → ゲーム画面を隠す）
 ============================================================ */
 document.getElementById("close-button").addEventListener("click", () => {
-  window.close();
+  window.history.back();
 });
 
 /* ============================================================

@@ -9,7 +9,7 @@ let shopMessage = "";
 let currentShop = null;
 let blockTalkOneFrame = false;
 let MAX_KAIHUKU = 200;
-let field_speed = DEBUG_MODE ? 0.05 : 0.08;
+let field_speed = DEBUG_MODE ? 0.02 : 0.08;
 //let field_speed = DEBUG_MODE ? 0.05 : 0.04;
 window.tileSize = 40;
 const tileSize = 40;
@@ -350,10 +350,10 @@ async function startGame() {
     //eventFlags.all_switch_off = true;
     // ボスバリア
     eventFlags.all_switch_off = true;
-
+    eventFlags.beat_dylon = true;
     // ======================================================
-    playerStatus.weaponRank = 9;
-    playerStatus.weapon = 9;
+    playerStatus.weaponRank = 10;
+    playerStatus.weapon = 10;
 
     playerStatus.maxHp = 999999;
     playerStatus.hp = Math.min(999999, 999999);
@@ -1301,8 +1301,11 @@ function tryTalk() {
   }
   return false;
 }
-
 function playMovie(src) {
+
+  // ★ Safari 対策：動画再生中フラグ ON
+  isMoviePlaying = true;
+
   const panel = document.getElementById("scoreEntry");
   panel.style.display = "block";
   panel.dataset.score = finalScore;
@@ -1312,23 +1315,41 @@ function playMovie(src) {
 
   const video = document.createElement("video");
   video.src = src;
-  video.autoplay = true;
+
+  // ★ Safari 対策：必須
+  video.playsInline = true;
+  video.muted = false;
+
+  // ★ autoplay は Safari では信用できないので play() を後で呼ぶ
+  video.autoplay = false;
   video.controls = false;
 
   video.style.position = "absolute";
-
-  // ★ canvas の中央に配置する
   video.style.left = rect.left + "px";
   video.style.top = rect.top + "px";
   video.style.width = rect.width + "px";
   video.style.height = rect.height + "px";
-
   video.style.objectFit = "cover";
   video.style.zIndex = 9999;
 
   document.body.appendChild(video);
 
+  // ★ Safari 対策：ユーザー操作扱いにする
+  setTimeout(() => {
+    video.play().catch(err => {
+      console.log("Safari play error:", err);
+    });
+  }, 50);
+
+  // ★ 終了時
+  /*video.onended = () => {
+    isMoviePlaying = false;   // ← touchstart の preventDefault を復活させる
+    video.remove();
+    // ここで次の処理へ
+    // goToTitle() など
+  };}*/
 }
+
 
 // ======================================================
 // Part D — UI・セーブ・Mover・通行判定（完全版）

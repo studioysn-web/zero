@@ -201,7 +201,7 @@
 <canvas id="gameCanvas" width="800" height="600"></canvas>
 
 <div id="scoreEntry"
-     style="position:absolute; top:75%; left:50%;
+     style="position:absolute; top:55%; left:50%;
             transform:translate(-50%, -50%);
             background:rgba(0,0,0,0.85);
             padding:20px; color:white;
@@ -381,8 +381,9 @@ bindMobileKey("btnRight", "ArrowRight");
     background:rgba(93, 247, 4, 0.9);
   "></div>
 </div>
-
 <script>
+  let isMoviePlaying = false;  // ★ movie 再生中フラグ
+
   // iPhone Safari のテキスト選択禁止（最強セット）
   const ui = document.getElementById("controllerArea");
 
@@ -390,40 +391,58 @@ bindMobileKey("btnRight", "ArrowRight");
     e.preventDefault();
   });
 
-  // ★★★ ここに例外処理を入れる ★★★
   document.addEventListener("touchstart", (e) => {
-    const id = e.target.id;
 
-    // ★ スコア登録・キャンセルボタンは許可
-    if (
-      id === "registerScoreBtn" ||
-      id === "cancelScoreBtn" ||
-      id === "endingRegisterBtn" ||
-      id === "endingCancelBtn"
-    ) {
+    // ★ movie 再生中は絶対に preventDefault しない
+    if (isMoviePlaying) {
       return;
     }
 
-    // ★ ゲーム操作ボタンも許可
-    if (
-      id === "btnZ" || id === "btnX" || id === "btnC" ||
-      id === "btnUp" || id === "btnDown" ||
-      id === "btnLeft" || id === "btnRight"
-    ) {
+    const allowIds = [
+      "scoreEntry",
+      "registerScoreBtn",
+      "cancelScoreBtn",
+      "endingRegisterBtn",
+      "endingCancelBtn",
+      "btnZ", "btnX", "btnC",
+      "btnUp", "btnDown", "btnLeft", "btnRight"
+    ];
+
+    let el = e.target;
+    let hit = false;
+
+    while (el) {
+      if (allowIds.includes(el.id)) {
+        hit = true;
+        break;
+      }
+      el = el.parentElement;
+    }
+
+    if (hit) {
       return;
     }
 
-    // ★ それ以外は長押し禁止
     if (e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
       e.preventDefault();
     }
+
   }, { passive: false });
 
   document.addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
-</script>
 
+  // ★ movie 再生開始時に呼ぶ関数
+  function startMovie() {
+    isMoviePlaying = true;
+  }
+
+  // ★ movie 終了時に呼ぶ関数
+  function endMovie() {
+    isMoviePlaying = false;
+  }
+</script>
 
 
 </body>

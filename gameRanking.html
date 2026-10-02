@@ -174,7 +174,7 @@
           .from("studio_ysn_table")
           .select("USERID, SCORE, ENTRYTIME")
           .eq("GAMEID", gameId)
-          .order("SCORE", { ascending: false })
+          .order("SCORE", { ascending: gameId === 5 })  // ← ここがポイント
           .limit(10);
 
         const block = document.createElement("div");

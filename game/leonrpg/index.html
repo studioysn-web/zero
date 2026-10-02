@@ -163,6 +163,26 @@
     .act-btn.x { bottom: 50px; right: 0;}
     .act-btn.c { top: -40px; left: 50%; transform: translateX(-50%); }
 
+  /* ▼ スコア登録パネルのボタン統一 */
+  .score-btn {
+    width: 220px;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: block;      /* ← 縦並びにする */
+    margin-left: auto;
+    margin-right: auto;  /* ← 中央寄せ */
+    background: #4CAF50; /* 緑（登録ボタン） */
+    color: white;
+  }
+
+  .score-btn.cancel {
+    background: #d9534f; /* 赤（キャンセルボタン） */
+  }
   </style>
 </head>
 
@@ -175,10 +195,38 @@
   <div class="line">かいふく(X): <span id="uiHeals"></span></div>
   <div class="line">Gold: <span id="uiGold"></span></div>
   <div class="line">逃亡(C)</div>
+  <div class="line">経過時間: <span id="uiTime"></span></div>
 </div>
 
 <canvas id="gameCanvas" width="800" height="600"></canvas>
 
+<div id="scoreEntry"
+     style="position:absolute; top:75%; left:50%;
+            transform:translate(-50%, -50%);
+            background:rgba(0,0,0,0.85);
+            padding:20px; color:white;
+            border:2px solid #fff;
+            border-radius:10px;
+            display:none; z-index:99999;
+            text-align:center;">
+
+  <div style="font-size:20px; margin-bottom:10px;">
+    名前を入力してください
+  </div>
+
+  <input type="text" id="userName" maxlength="10"
+         style="font-size:20px; padding:5px; width:200px;"><br><br>
+
+  <button id="registerScoreBtn" class="score-btn">
+    このスコアを登録
+  </button>
+
+  <button id="cancelScoreBtn" class="score-btn cancel">
+    キャンセル
+  </button>
+
+  <div id="scoreEntryResult" style="margin-top:10px; font-size:16px;"></div>
+</div>
 <div id="controllerArea">
 
   <div class="dpad">
@@ -195,7 +243,68 @@
   </div>
 
 </div>
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
+// ★ Supabase 接続
+const supabase = createClient(
+  "https://gsgtgryjwdqhzzbcbssy.supabase.co",
+  "sb_publishable_yM2UbH1x_AzebIX5WECr-w_-WbVIGrb"
+);
+
+// ★ ハイスコア取得
+window.loadHighScore = async function () {
+  const { data, error } = await supabase
+    .from("studio_ysn_table")
+    .select("SCORE")
+    .eq("GAMEID", 5)
+    .order("SCORE", { ascending: false })
+    .limit(1);
+
+  if (error || !data || data.length === 0) return 0;
+  return data[0].SCORE;
+};
+
+// ★ スコア登録ボタン
+document.getElementById("registerScoreBtn").addEventListener("click", async () => {
+  const name = document.getElementById("userName").value.trim();
+  const panel = document.getElementById("scoreEntry");
+  const score = Number(panel.dataset.score);
+
+  if (!name) {
+    document.getElementById("scoreEntryResult").innerText = "名前を入力してください。";
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("studio_ysn_table")
+    .insert([
+      {
+        GAMEID: 5,
+        USERID: name,
+        SCORE: score,
+        ENTRYTIME: new Date().toISOString()
+      }
+    ]);
+
+  if (error) {
+    document.getElementById("scoreEntryResult").innerText = "登録失敗: " + error.message;
+  } else {
+    //document.getElementById("scoreEntryResult").innerText = "登録成功！";
+
+    // ★ ハイスコア再取得
+    window.highScore = await window.loadHighScore();
+
+    panel.style.display = "none";
+  }
+});
+
+// ★ キャンセルボタン
+document.getElementById("cancelScoreBtn").addEventListener("click", () => {
+  document.getElementById("scoreEntry").style.display = "none";
+  document.getElementById("scoreEntryResult").innerText = "";
+});
+</script>
 <script src="./js/mapLoader.js"></script>
 <script src="./js/main.js"></script>
 <script src="./js/battle.js"></script>
@@ -251,10 +360,6 @@ bindMobileKey("btnDown", "ArrowDown");
 bindMobileKey("btnLeft", "ArrowLeft");
 bindMobileKey("btnRight", "ArrowRight");
 
-// × ボタン
-document.getElementById("closeBtn").addEventListener("click", () => {
-  console.log("Close pressed");
-});
 </script>
 
 <div id="playerHpBar" style="
@@ -281,24 +386,44 @@ document.getElementById("closeBtn").addEventListener("click", () => {
   // iPhone Safari のテキスト選択禁止（最強セット）
   const ui = document.getElementById("controllerArea");
 
-  // テキスト選択開始を完全に無効化
   document.addEventListener("selectstart", (e) => {
     e.preventDefault();
   });
 
-  // 長押しによる選択・コピー・ハイライトを無効化
+  // ★★★ ここに例外処理を入れる ★★★
   document.addEventListener("touchstart", (e) => {
-    // 入力欄以外は全部禁止
+    const id = e.target.id;
+
+    // ★ スコア登録・キャンセルボタンは許可
+    if (
+      id === "registerScoreBtn" ||
+      id === "cancelScoreBtn" ||
+      id === "endingRegisterBtn" ||
+      id === "endingCancelBtn"
+    ) {
+      return;
+    }
+
+    // ★ ゲーム操作ボタンも許可
+    if (
+      id === "btnZ" || id === "btnX" || id === "btnC" ||
+      id === "btnUp" || id === "btnDown" ||
+      id === "btnLeft" || id === "btnRight"
+    ) {
+      return;
+    }
+
+    // ★ それ以外は長押し禁止
     if (e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
       e.preventDefault();
     }
   }, { passive: false });
 
-  // Safari の長押しメニュー（コピー・共有）を無効化
   document.addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
 </script>
+
 
 
 </body>

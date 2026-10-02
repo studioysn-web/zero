@@ -3,6 +3,7 @@
 // ======================================================
 const DEBUG_MODE = false; // デバッグモード
 // ショップ関連の状態
+let startTime = Date.now();
 let shopCursor = 0;
 let shopMessage = "";
 let currentShop = null;
@@ -293,29 +294,6 @@ let balloon = { active: false, text: "", x: 0, y: 0 };
 async function startGame() {
   gameState = "loading";
 
-  /*
-  // フラグテストエリア(TODO) =============================
-eventFlags.ship = true;
-eventFlags.stome_off = true;
-eventFlags.get_key = true;
-eventFlags.get_wood_cube = true;
-eventFlags.get_soil_cube = true;
-eventFlags.get_snow_cube = true;
-eventFlags.get_sky_cube = true;
-eventFlags.get_unknown_cube = true;
-
-eventFlags.put_wood_cube = true;
-eventFlags.put_sand_cube = true;
-eventFlags.put_soil_cube = true;
-eventFlags.put_snow_cube = true;
-eventFlags.put_fire_cube = true;
-eventFlags.put_sky_cube = true;
-eventFlags.get_fire_cube = true;
-// ★ テストで船を最初から使えるように
-  eventFlags.put_unknown_cube = true;
-  //eventFlags.all_switch_off = true;
-  // ======================================================
-*/
   await loadWeaponMaster();
   await loadEnemyMaster();
 
@@ -348,6 +326,55 @@ eventFlags.get_fire_cube = true;
   updatePlayerImagesByRank(playerStatus.weaponRank);
 
   gameState = "game";
+
+  if (DEBUG_MODE) {
+    // フラグテストエリア(TODO) =============================
+    eventFlags.ship = true;
+    eventFlags.stome_off = true;
+    eventFlags.get_key = true;
+    eventFlags.get_wood_cube = true;
+    eventFlags.get_soil_cube = true;
+    eventFlags.get_snow_cube = true;
+    eventFlags.get_sky_cube = true;
+    eventFlags.get_unknown_cube = true;
+
+    eventFlags.put_wood_cube = true;
+    eventFlags.put_sand_cube = true;
+    eventFlags.put_soil_cube = true;
+    eventFlags.put_snow_cube = true;
+    eventFlags.put_fire_cube = true;
+    eventFlags.put_sky_cube = true;
+    eventFlags.get_fire_cube = true;
+    // ★ テストで船を最初から使えるように
+    eventFlags.put_unknown_cube = true;
+    //eventFlags.all_switch_off = true;
+    // ボスバリア
+    eventFlags.all_switch_off = true;
+
+    // ======================================================
+    playerStatus.weaponRank = 9;
+    playerStatus.weapon = 9;
+
+    playerStatus.maxHp = 999999;
+    playerStatus.hp = Math.min(999999, 999999);
+
+    updatePlayerImagesByRank(w.rank);
+   
+    const hpRatio = playerStatus.hp / playerStatus.maxHp;
+    const fill = document.getElementById("playerHpFill");
+
+    fill.style.width = (hpRatio * 100) + "%";
+
+    if (hpRatio > HP_DOWN) {
+      fill.style.background = "rgba(80,255,80,0.9)";
+    } else {
+      fill.style.background = "rgba(255,80,80,0.9)";
+    }
+
+
+
+
+  }
 }
 
 // アニメーション更新
@@ -395,6 +422,7 @@ function updateScrollOffset() {
 
 // 描画
 function drawGame() {
+document.getElementById("uiTime").textContent = getPlayTime();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   mapLoader.draw(ctx);
 
@@ -428,7 +456,6 @@ function drawGame() {
   }
 }
 
-
 // メインループ
 let lastTime = 0;
 function loop(t) {
@@ -446,7 +473,6 @@ function loop(t) {
     ctx.textAlign = "center";
     ctx.fillText("Loading...", canvas.width / 2, canvas.height / 2);
 
-    
     // 宣伝メッセージ（任意）
     ctx.font = "20px sans-serif";
     ctx.fillText("PALETTE BATTLERS - Now Loading", canvas.width / 2, canvas.height / 2 + 40);
@@ -776,16 +802,16 @@ function tryOpenChest() {
 
           updatePlayerImagesByRank(w.rank);
           showBalloon(`${w.text}を手に入れた！`, chestMover);
-const hpRatio = playerStatus.hp / playerStatus.maxHp;
-const fill = document.getElementById("playerHpFill");
+          const hpRatio = playerStatus.hp / playerStatus.maxHp;
+          const fill = document.getElementById("playerHpFill");
 
-fill.style.width = (hpRatio * 100) + "%";
+          fill.style.width = (hpRatio * 100) + "%";
 
-if (hpRatio > HP_DOWN) {
-  fill.style.background = "rgba(80,255,80,0.9)";
-} else {
-  fill.style.background = "rgba(255,80,80,0.9)";
-}
+          if (hpRatio > HP_DOWN) {
+            fill.style.background = "rgba(80,255,80,0.9)";
+          } else {
+            fill.style.background = "rgba(255,80,80,0.9)";
+          }
         } else {
           playerStatus.gold += w.gold;
           showBalloon(`${w.gold}G を手に入れた！`, chestMover);
@@ -1218,6 +1244,9 @@ function tryTalk() {
       // ★ movie NPC（mp4再生）
       // ------------------------------------------------------
       if (data.move === "movie") {
+        const ms = Date.now() - startTime;
+        const totalSec = Math.floor(ms / 1000);
+        window.finalScore = totalSec;   // ← スコアとして保存
 
         // mp4ファイルのパスを data.movie_src に入れておく
         showBalloon(data.text_before, npc);
@@ -1274,6 +1303,10 @@ function tryTalk() {
 }
 
 function playMovie(src) {
+  const panel = document.getElementById("scoreEntry");
+  panel.style.display = "block";
+  panel.dataset.score = finalScore;
+
   const canvas = document.getElementById("gameCanvas");
   const rect = canvas.getBoundingClientRect();
 
@@ -1466,4 +1499,12 @@ function getNpcText(data) {
   // 旧方式：before/after（talk がヒットしなかった時だけ使う）
   const flag = eventFlags[data.eventId] || false;
   return flag ? data.text_after : data.text_before;
+}
+
+function getPlayTime() {
+  const ms = Date.now() - startTime;
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${min}:${sec.toString().padStart(2, "0")}`;
 }

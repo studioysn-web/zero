@@ -445,10 +445,16 @@ ctx.fillRect(0, 0, canvas.width, 80);
   );
 
   // ====== スコア・タイム ======
-  ctx.fillStyle = "white";
+  // HIGH SCORE（黄色）
+  ctx.fillStyle = "yellow";
   ctx.font = "24px sans-serif";
   ctx.textAlign = "right";
-  ctx.fillText(`SCORE: ${score}`, canvas.width - 10, 30);
+  ctx.fillText(`HIGH: ${highScore}`, canvas.width - 10, 20);
+
+  // SCORE（白）
+  ctx.fillStyle = "white";
+  ctx.fillText(`SCORE: ${score}`, canvas.width - 10, 40);
+
 
   ctx.textAlign = "left";
   ctx.fillText(`TIME: ${timeLeft}s`, 10, 30);

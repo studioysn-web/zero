@@ -797,7 +797,7 @@
 
     // ▼ GAME OVER
     if(gameOver){
-      ctx.fillStyle="rgba(0,0,0,0.7)";
+      ctx.fillStyle="rgba(215, 236, 18, 0.7)";
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
       ctx.textAlign="center";
@@ -806,7 +806,7 @@
       ctx.fillText("GAME OVER",canvas.width/2,canvas.height/2-40);
 
       ctx.font="24px sans-serif";
-      ctx.fillStyle="#555";
+      ctx.fillStyle="#ec30b4";
       ctx.fillText(`SCORE: ${score}`,canvas.width/2,canvas.height/2+10);
       ctx.fillText(`HIGH SCORE: ${highScore}`,canvas.width/2,canvas.height/2+40);
       ctx.fillText("スペース or Enter で再スタート",canvas.width/2,canvas.height/2+80);

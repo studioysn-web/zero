@@ -75,7 +75,7 @@
     "x": 17,
     "y": 9,
     "move": "movie",
-    "movie_src": "data/ending/ending.mp4",
+    "movie_src": "./data/ending/ending.mp4",
     "text_before": "……記録媒体、起動。",
     "text_after": "映像は終わった。"
   },

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ランキング確認</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #05060a;
+      color: #f5f5f5;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      letter-spacing: 0.2em;
+      font-weight: 300;
+      margin-bottom: 20px;
+    }
+
+    .back-btn {
+      display: block;
+      width: 120px;
+      margin: 10px auto 20px auto;
+      padding: 10px;
+      text-align: center;
+      background: #1f2937;
+      border-radius: 8px;
+      color: #e5e7eb;
+      text-decoration: none;
+      border: 1px solid #374151;
+      transition: 0.2s;
+    }
+    .back-btn:hover {
+      background: #374151;
+    }
+
+    .game-block {
+      margin: 0 auto 30px auto;
+      max-width: 480px;
+      background: linear-gradient(135deg, #111827, #020617);
+      border-radius: 16px;
+      padding: 16px 20px 20px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+      border: 1px solid rgba(148,163,184,0.4);
+    }
+
+    .game-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 10px;
+      color: #e5e7eb;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 6px 4px;
+      text-align: center;
+    }
+
+    th {
+      font-weight: 500;
+      color: #9ca3af;
+      border-bottom: 1px solid rgba(55,65,81,0.8);
+    }
+
+    tr:nth-child(odd) td {
+      background: rgba(17,24,39,0.7);
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(15,23,42,0.4);
+    }
+
+    .rank-cell {
+      width: 40px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .rank-icon {
+      width: 22px;
+      height: 22px;
+      vertical-align: middle;
+    }
+
+    .name-cell {
+      width: 40%;
+      text-align: left;
+      padding-left: 10px;
+    }
+
+    .score-cell {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      padding-right: 10px;
+    }
+
+    .time-cell {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: #9ca3af;
+      padding-right: 10px;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-btn">← 戻る</a>
+
+  <h1>RANKING</h1>
+
+  <div id="rankingContainer"></div>
+
+  <a href="index.html" class="back-btn">← 戻る</a>
+
+  <div class="footer-note">
+    studio Y.S.N score ranking / GAMEID 1–5
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+    const supabaseUrl = "https://gsgtgryjwdqhzzbcbssy.supabase.co";
+    const supabaseKey =  "sb_publishable_yM2UbH1x_AzebIX5WECr-w_-WbVIGrb";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const GAME_NAMES = {
+      1: "バトラーズショット",
+      2: "襲撃のグラットン",
+      3: "怪盗スプロットのハチャメチャ大作戦",
+      4: "NOVA GALAXY",
+      5: "レオンアドベンチャー"
+    };
+
+    // ★ 登録日を YYYY/MM/DD に変換
+    function formatDate(dateStr) {
+      if (!dateStr) return "-";
+      const d = dateStr.split("T")[0]; // YYYY-MM-DD
+      const [y, m, d2] = d.split("-");
+      return `${y}/${m}/${d2}`;
+    }
+
+    // ★ GAMEID 5 → hh:mm（プレイ時間）
+    function formatScore(gameId, score) {
+      if (gameId === 5) {
+        const h = Math.floor(score / 3600);
+        const m = Math.floor((score % 3600) / 60) + "(所要時間)";
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      }
+      return score + "点";
+    }
+
+    async function loadRanking() {
+      const container = document.getElementById("rankingContainer");
+      container.innerHTML = "";
+
+      for (let gameId = 1; gameId <= 5; gameId++) {
+        const { data, error } = await supabase
+          .from("studio_ysn_table")
+          .select("USERID, SCORE, ENTRYTIME")
+          .eq("GAMEID", gameId)
+          .order("SCORE", { ascending: false })
+          .limit(10);
+
+        const block = document.createElement("div");
+        block.className = "game-block";
+
+        const title = document.createElement("div");
+        title.className = "game-title";
+        title.innerHTML = `${GAME_NAMES[gameId]}`;
+        block.appendChild(title);
+
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        thead.innerHTML = `
+          <tr>
+            <th>順位</th>
+            <th>ニックネーム</th>
+            <th>スコア</th>
+            <th>登録日</th>
+          </tr>
+        `;
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+
+        if (error) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td colspan="4" style="color:#f87171;">ERROR: ${error.message}</td>`;
+          tbody.appendChild(tr);
+        } else if (!data || data.length === 0) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td colspan="4" style="color:#6b7280;">No entry yet.</td>`;
+          tbody.appendChild(tr);
+        } else {
+          data.forEach((row, index) => {
+
+            // ★ 1〜3位の画像アイコン
+            let rankIcon = index + 1;
+            if (index === 0) rankIcon = `<img src="img/gameRank/rank1.png" class="rank-icon">`;
+            if (index === 1) rankIcon = `<img src="img/gameRank/rank2.png" class="rank-icon">`;
+            if (index === 2) rankIcon = `<img src="img/gameRank/rank3.png" class="rank-icon">`;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td class="rank-cell">${rankIcon}</td>
+              <td class="name-cell">${row.USERID}</td>
+              <td class="score-cell">${formatScore(gameId, row.SCORE)}</td>
+              <td class="time-cell">${formatDate(row.ENTRYTIME)}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+
+        table.appendChild(tbody);
+        block.appendChild(table);
+        container.appendChild(block);
+      }
+    }
+
+    loadRanking();
+  </script>
+</body>
+</html>

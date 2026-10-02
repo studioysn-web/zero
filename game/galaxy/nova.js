@@ -277,6 +277,13 @@ function updateScore(add) {
   score += add;
   scoreDisplay.textContent = `SCORE: ${score}`;
 
+  // ★ ハイスコア更新（ここが重要）
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem("galaxy_invader_highscore", highScore);
+    document.getElementById("highscore-display").textContent = `HIGH: ${highScore}`;
+  }
+
   const newStageIndex = Math.min(maxStage, Math.floor(score / 5000) + 1);
   bgStageIndex = newStageIndex;
 
@@ -285,6 +292,7 @@ function updateScore(add) {
   }
   lastScoreForChange = score;
 }
+
 
 function applyScoreChange() {
   const isSpeedUp = Math.random() < 0.5;
@@ -599,15 +607,19 @@ function gameLoop(timestamp) {
 // ====== クリックでゲーム開始 ======
 startButton.addEventListener("click", async () => {
   if (!gameStarted) {
-    gameStarted = true;   // ← これが無いとタイトルから進まない
+    gameStarted = true;
 
-    // ★ Supabase からハイスコアを1回だけ取得（Promiseを解決する）
     window.highScore = await window.loadHighScore();
     highScore = window.highScore;
   }
 
+  // ★ ここに追加
+  document.getElementById("highscore-display").textContent =
+    `HIGH: ${highScore}`;
+
   resetGame();
 });
+
 
 
 // ====== 起動 ======

@@ -33,15 +33,6 @@ body {
     box-sizing: border-box;
   }
 
-  #score-display {
-    font-size: 16px;
-    font-weight: bold;
-    color: #000;
-    background: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-  }
-
 #game-container {
   position: relative;
   width: 100%;
@@ -176,16 +167,6 @@ body {
   z-index: 30;
 }
 
-
-  #score-display {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 20px;
-    z-index: 20;
-  }
-
   #close-button {
     position: absolute;
     top: 10px;
@@ -265,13 +246,47 @@ body {
   .score-btn.cancel {
     background: #d9534f; /* 赤（キャンセルボタン） */
   }
+ #score-container {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px; /* ← HIGH と SCORE の距離 */
+  font-size: 20px;
+  z-index: 20;
+}
+#score-container {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  font-size: 20px;
+  z-index: 20;
+}
+
+#highscore-display {
+  color: rgb(245, 9, 9);
+  font-weight: bold;
+}
+
+#score-display {
+  color: white;
+  font-weight: bold;
+}
+
 </style>
 </head>
 
 <body>
 <div id="gameArea">
 
-<div id="score-display">SCORE: 0</div>
+<div id="score-container">
+  <span id="highscore-display">HIGH: 0</span>
+  <span id="score-display">SCORE: 0</span>
+</div>
 <div id="close-button">戻る</div>
 
   <div id="game-container">

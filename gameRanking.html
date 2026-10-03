@@ -2,56 +2,79 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ランキング確認</title>
+  <title>ランキング確認 - ピュアゴールド</title>
   <style>
     body {
       margin: 0;
       padding: 20px;
-      background: #05060a;
-      color: #f5f5f5;
+      /* 背景画像を右側に固定しつつ、金ぴかのグラデーションを重ねる設定 */
+      background-image: 
+        linear-gradient(135deg, rgba(255, 232, 117, 0.85) 0%, rgba(255, 215, 0, 0.85) 25%, rgba(255, 165, 0, 0.85) 50%, rgba(255, 215, 0, 0.85) 75%, rgba(255, 241, 176, 0.85) 100%),
+        url("img/gameRank/rankingBack.png");
+      background-size: cover;
+      background-position: right center; /* ← ここを右寄せに変更しました */
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      color: #3b2706;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     h1 {
       text-align: center;
-      letter-spacing: 0.2em;
-      font-weight: 300;
-      margin-bottom: 20px;
+      letter-spacing: 0.3em;
+      font-weight: 900;
+      font-size: 36px;
+      margin-bottom: 25px;
+      color: #ffffff;
+      text-shadow: 0 0 15px #ffcc00, 0 0 30px #ff9900, 0 2px 5px rgba(100,60,0,0.6);
+      -webkit-text-stroke: 1px #805500;
     }
 
     .back-btn {
       display: block;
-      width: 120px;
-      margin: 10px auto 20px auto;
-      padding: 10px;
+      width: 140px;
+      margin: 15px auto;
+      padding: 12px;
       text-align: center;
-      background: #1f2937;
-      border-radius: 8px;
-      color: #e5e7eb;
+      background: linear-gradient(135deg, #ffffff, #ffea75);
+      border-radius: 30px;
+      color: #704200;
       text-decoration: none;
-      border: 1px solid #374151;
-      transition: 0.2s;
+      border: 2px solid #ffffff;
+      box-shadow: 0 6px 20px rgba(180,120,0,0.4), inset 0 2px 4px rgba(255,255,255,1);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      transition: all 0.2s ease;
     }
     .back-btn:hover {
-      background: #374151;
+      background: linear-gradient(135deg, #fff7bd, #ffffff);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(200,130,0,0.6), inset 0 2px 6px rgba(255,255,255,1);
     }
 
     .game-block {
-      margin: 0 auto 30px auto;
-      max-width: 480px;
-      background: linear-gradient(135deg, #111827, #020617);
-      border-radius: 16px;
-      padding: 16px 20px 20px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
-      border: 1px solid rgba(148,163,184,0.4);
+      margin: 0 auto 35px auto;
+      max-width: 520px;
+      /* ブロックも眩しいゴールド光沢に */
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,235,140,0.9));
+      border-radius: 20px;
+      padding: 20px 24px 24px;
+      box-shadow: 0 20px 40px rgba(130,80,0,0.4), inset 0 2px 4px rgba(255,255,255,1);
+      border: 3px solid #ffffff;
+      position: relative;
+      overflow: hidden;
     }
 
     .game-title {
-      font-size: 18px;
-      font-weight: 500;
-      margin-bottom: 10px;
-      color: #e5e7eb;
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 15px;
+      color: #613d00;
       text-align: center;
+      letter-spacing: 0.05em;
+      text-shadow: 0 1px 2px rgba(255,255,255,1);
+      border-bottom: 3px double #d4af37;
+      padding-bottom: 10px;
     }
 
     table {
@@ -61,60 +84,89 @@
     }
 
     th, td {
-      padding: 6px 4px;
+      padding: 8px 6px;
       text-align: center;
     }
 
     th {
-      font-weight: 500;
-      color: #9ca3af;
-      border-bottom: 1px solid rgba(55,65,81,0.8);
+      font-weight: 800;
+      color: #704200;
+      border-bottom: 2px solid #c79c2e;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.05em;
     }
 
+    /* テーブル行のストライプ：輝くゴールドトーン */
     tr:nth-child(odd) td {
-      background: rgba(17,24,39,0.7);
+      background: rgba(255, 215, 0, 0.18);
     }
 
     tr:nth-child(even) td {
-      background: rgba(15,23,42,0.4);
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* 上位の行をさらに強力にゴールド強調 */
+    tr:nth-child(1) td {
+      background: rgba(255, 200, 0, 0.55) !important;
+      font-weight: bold;
+    }
+    tr:nth-child(2) td {
+      background: rgba(230, 230, 230, 0.5) !important;
+    }
+    tr:nth-child(3) td {
+      background: rgba(220, 140, 60, 0.3) !important;
     }
 
     .rank-cell {
-      width: 40px;
+      width: 45px;
       text-align: center;
-      font-weight: 600;
+      font-weight: 900;
+      color: #5c3a00;
     }
 
     .rank-icon {
-      width: 22px;
-      height: 22px;
+      width: 26px;
+      height: 26px;
       vertical-align: middle;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
 
     .name-cell {
-      width: 40%;
+      width: 38%;
       text-align: left;
       padding-left: 10px;
+      color: #3b2500;
+      word-break: break-all;
+      font-weight: 700;
     }
 
     .score-cell {
       text-align: right;
       font-variant-numeric: tabular-nums;
       padding-right: 10px;
+      color: #613d00;
+      font-weight: 900;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
     }
 
     .time-cell {
       text-align: right;
       font-variant-numeric: tabular-nums;
-      color: #9ca3af;
+      color: #7a5c22;
       padding-right: 10px;
+      font-size: 12px;
+      font-weight: 600;
     }
 
     .footer-note {
       text-align: center;
-      font-size: 11px;
-      color: #6b7280;
-      margin-top: 20px;
+      font-size: 12px;
+      color: #ffffff;
+      margin-top: 30px;
+      letter-spacing: 0.1em;
+      text-shadow: 0 1px 3px rgba(120,70,0,0.8);
+      font-weight: 700;
     }
   </style>
 </head>
@@ -122,7 +174,7 @@
 
   <a href="index.html" class="back-btn">← 戻る</a>
 
-  <h1>RANKING</h1>
+  <h1>✨ studio Y.S.N RANKING ✨</h1>
 
   <div id="rankingContainer"></div>
 
@@ -136,7 +188,7 @@
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
     const supabaseUrl = "https://gsgtgryjwdqhzzbcbssy.supabase.co";
-    const supabaseKey =  "sb_publishable_yM2UbH1x_AzebIX5WECr-w_-WbVIGrb";
+    const supabaseKey = "sb_publishable_yM2UbH1x_AzebIX5WECr-w_-WbVIGrb";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const GAME_NAMES = {
@@ -147,15 +199,13 @@
       5: "レオンアドベンチャー"
     };
 
-    // ★ 登録日を YYYY/MM/DD に変換
     function formatDate(dateStr) {
       if (!dateStr) return "-";
-      const d = dateStr.split("T")[0]; // YYYY-MM-DD
+      const d = dateStr.split("T")[0];
       const [y, m, d2] = d.split("-");
       return `${y}/${m}/${d2}`;
     }
 
-    // ★ GAMEID 5 → hh:mm（プレイ時間）
     function formatScore(gameId, score) {
       if (gameId === 5) {
         const h = Math.floor(score / 3600);
@@ -168,10 +218,8 @@
           String(s).padStart(2, "0")
         );
       }
-      return score + "点";
+      return score.toLocaleString() + "点";
     }
-
-
 
     async function loadRanking() {
       const container = document.getElementById("rankingContainer");
@@ -182,7 +230,7 @@
           .from("studio_ysn_table")
           .select("USERID, SCORE, ENTRYTIME")
           .eq("GAMEID", gameId)
-          .order("SCORE", { ascending: gameId === 5 })  // ← ここがポイント
+          .order("SCORE", { ascending: gameId === 5 })
           .limit(10);
 
         const block = document.createElement("div");
@@ -190,7 +238,7 @@
 
         const title = document.createElement("div");
         title.className = "game-title";
-        title.innerHTML = `${GAME_NAMES[gameId]}`;
+        title.innerHTML = `👑 ${GAME_NAMES[gameId]} 👑`;
         block.appendChild(title);
 
         const table = document.createElement("table");
@@ -209,16 +257,14 @@
 
         if (error) {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td colspan="4" style="color:#f87171;">ERROR: ${error.message}</td>`;
+          tr.innerHTML = `<td colspan="4" style="color:#b91c1c; font-weight:bold;">ERROR: ${error.message}</td>`;
           tbody.appendChild(tr);
         } else if (!data || data.length === 0) {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td colspan="4" style="color:#6b7280;">No entry yet.</td>`;
+          tr.innerHTML = `<td colspan="4" style="color:#7a5c22; font-weight:bold;">No entry yet.</td>`;
           tbody.appendChild(tr);
         } else {
           data.forEach((row, index) => {
-
-            // ★ 1〜3位の画像アイコン
             let rankIcon = index + 1;
             if (index === 0) rankIcon = `<img src="img/gameRank/rank1.png" class="rank-icon">`;
             if (index === 1) rankIcon = `<img src="img/gameRank/rank2.png" class="rank-icon">`;

@@ -49,11 +49,12 @@
       "talk": [
         {
           "require": {"char_center_city2_01_05":true},
-          "text": "[まちの人]\nまほうも使えるんだぜ！"
+          "eventId":{"char_center_city2_01_05":false},
+          "text": "[まちの人]\n西はヴァロリア\n陸続きで北にノースヴァリア\n南西はシャッターアイルズ"
         },
         {
           "eventId":{"char_center_city2_01_05":true},
-          "text": "[まちの人]\n私はパレットバトラーズに入隊するんだ。"
+          "text": "[まちの人]\n北はヴィレンダル\n東はザリンドル\n南東はドラコサン"
         }
       ],
       "x": 4,

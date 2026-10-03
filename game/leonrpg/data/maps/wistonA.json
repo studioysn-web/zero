@@ -147,7 +147,7 @@
     "name": "01",
     "group": "item",
     "itemId": 1,
-    "value": 1,
+    "value":2,
     "eventId": "wiston_i_4"
   },
   {
@@ -157,17 +157,17 @@
     "name": "01",
     "group": "item",
     "itemId": 1,
-    "value": 1,
+    "value": 2,
     "eventId": "wiston_i_5"
   },
   {
     "id": 6,
     "x": 6,
     "y": 12,
-    "name": "02",
+    "name": "01",
     "group": "item",
     "itemId": 1,
-    "value": 1,
+    "value": 3,
     "eventId": "wiston_i_6"
   }
 ],

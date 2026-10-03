@@ -335,6 +335,7 @@ async function startGame() {
     eventFlags.get_wood_cube = true;
     eventFlags.get_soil_cube = true;
     eventFlags.get_snow_cube = true;
+    eventFlags.get_fire_cube = true;
     eventFlags.get_sky_cube = true;
     eventFlags.get_unknown_cube = true;
 
@@ -344,7 +345,7 @@ async function startGame() {
     eventFlags.put_snow_cube = true;
     eventFlags.put_fire_cube = true;
     eventFlags.put_sky_cube = true;
-    eventFlags.get_fire_cube = true;
+
     // ★ テストで船を最初から使えるように
     eventFlags.put_unknown_cube = true;
     //eventFlags.all_switch_off = true;

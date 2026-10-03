@@ -159,11 +159,19 @@
     function formatScore(gameId, score) {
       if (gameId === 5) {
         const h = Math.floor(score / 3600);
-        const m = Math.floor((score % 3600) / 60) + "(所要時間)";
-        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        const m = Math.floor((score % 3600) / 60);
+        const s = score % 60;
+
+        return (
+          String(h).padStart(2, "0") + ":" +
+          String(m).padStart(2, "0") + ":" +
+          String(s).padStart(2, "0")
+        );
       }
       return score + "点";
     }
+
+
 
     async function loadRanking() {
       const container = document.getElementById("rankingContainer");

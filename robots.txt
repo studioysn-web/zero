@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://studioysn-web.github.io/zero/sitemap.xml

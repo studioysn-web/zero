@@ -429,8 +429,8 @@ function updateScrollOffset() {
   if (mapW < canvas.width) ox = (canvas.width - mapW) / 2;
   if (mapH < canvas.height) oy = (canvas.height - mapH) / 2;
 
-  mapLoader.offsetX = ox;
-  mapLoader.offsetY = oy;
+  mapLoader.offsetX = Math.round(ox);
+  mapLoader.offsetY = Math.round(oy);
 }
 
 

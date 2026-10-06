@@ -92,8 +92,8 @@ class MapLoader {
         if (img) {
           ctx.drawImage(
             img,
-            x * tileSize + offsetX,
-            y * tileSize + offsetY,
+            Math.round(x * tileSize + offsetX),
+            Math.round(y * tileSize + offsetY),
             tileSize,
             tileSize
           );

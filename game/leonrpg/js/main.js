@@ -290,7 +290,7 @@ let balloon = { active: false, text: "", x: 0, y: 0 };
 // ゲーム開始
 async function startGame() {
   gameState = "loading";
-console.log("forceNewGame", forceNewGame);
+  //console.log("forceNewGame", forceNewGame);
   await loadWeaponMaster();
   await loadEnemyMaster();
 
@@ -1355,7 +1355,7 @@ function playMovie(src) {
   // ★ Safari 対策：ユーザー操作扱いにする
   setTimeout(() => {
     video.play().catch(err => {
-      console.log("Safari play error:", err);
+      //console.log("Safari play error:", err);
     });
   }, 50);
 
@@ -1574,7 +1574,7 @@ function saveGame() {
 
   const data = createSaveData();
 
-  console.log("SAVE", data);
+  //console.log("SAVE", data);
 
   localStorage.setItem(
     SAVE_KEY,

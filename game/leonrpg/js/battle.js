@@ -538,7 +538,7 @@ else if (drop.type === "weapon") {
       const rate = 0.9 + Math.random() * 0.2; // 0.9〜1.1
       return Math.floor(dmg * rate);
     }
-  // ダメージメーター（円と同時に ダメージ を出す）
+    // ダメージメーター（円と同時に ダメージ を出す）
     function showHpPie(enemy, dmg) {
       const canvas = document.getElementById("gameCanvas");
       const rect = canvas.getBoundingClientRect();
@@ -720,15 +720,10 @@ else if (drop.type === "weapon") {
             b.y > ey && b.y < ey + TILE) {
 
           // ★ 敵の現在HPの7%
-          let dmg = Math.floor(e.hp * 0.07);
-          if (dmg >= 800) {
-            dmg = 800;
-          }
+          let dmg = playerStatus.weapon.atk * 2;
+
           // ★ ±10% 揺らぎ
           dmg = applyVariance(dmg);
-
-          // ★ 最低1ダメージ保証
-          if (dmg < 1) dmg = 1;
 
           e.hp -= dmg;
           //showDamageFloat(e, dmg);
@@ -957,6 +952,9 @@ else if (drop.type === "weapon") {
   // ===============================
   async function start(enemyRank, status, tileId) {
 
+  keyZDown = false;
+  keys["KeyZ"] = false;
+  
   // ★ バトル状態の完全初期化（本丸）
   battleBalloon.active = false;
   battleBalloon.waitForZ = false;

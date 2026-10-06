@@ -1,3 +1,5 @@
+
+
 // ======================================================
 // Part A — 基本・プレイヤー・バトル・描画・ループ
 // ======================================================
@@ -115,14 +117,11 @@ const tileInfo = {
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-// ★ スマホでもズレないように内部サイズを合わせる
-//canvas.width  = canvas.clientWidth;
-//canvas.height = canvas.clientHeight;
 
-//canvas.width = 800;
-//canvas.height = 600;
+//let justLoaded = false;
 let gameState = "title";
 let mapLoader = null;
+let forceNewGame = false;
 
 // プレイヤー画像
 let playerImg0 = new Image();
@@ -143,7 +142,6 @@ async function loadEnemyMaster() {
 
 // イベントフラグ
 let eventFlags = { mapId: "homeR1" };
-let blockPortalOneFrame = false;
 
 // キー入力
 const keys = {};
@@ -258,8 +256,6 @@ function endBattle(result) {
     checkPortal(eventFlags.lastRespawn);
     return;
   }
-
-  blockPortalOneFrame = false;
 }
 
 // Mover（移動オブジェクト）
@@ -293,14 +289,34 @@ let balloon = { active: false, text: "", x: 0, y: 0 };
 // ゲーム開始
 async function startGame() {
   gameState = "loading";
-
+console.log("forceNewGame", forceNewGame);
   await loadWeaponMaster();
   await loadEnemyMaster();
 
-  mapLoader = new MapLoader(tileSize);
+	mapLoader = new MapLoader(tileSize);
+
+let loaded = false;
+ 
+if (!forceNewGame) {
+loaded = await loadGame();
+}
+
+if (!loaded) {
   await mapLoader.loadMap("homeR1");
 
   player = makeMover(7, 2, 0.12, "player");
+
+  eventFlags = {
+    mapId: "homeR1"
+  };
+
+  const w = weaponMaster["0"];
+
+  playerStatus.weaponRank = 0;
+  playerStatus.weapon = { ...w, rank: 0 };
+  playerStatus.hp = w.hp;
+  playerStatus.maxHp = w.hp;
+}
 
   // ★ NPC 再生成（倒した敵を除外）
   npcList = mapLoader.map.char
@@ -316,11 +332,7 @@ async function startGame() {
 
   await BattleEngine.init();
 
-  // ★ 武器初期化を削除（ここが本丸）
-  const w = weaponMaster["0"];
-  playerStatus.weapon = { ...w, rank: 0 };
-  playerStatus.hp = w.hp;
-  playerStatus.maxHp = w.hp;
+
 
   // ★ 代わりに現在の武器ランクで画像更新
   updatePlayerImagesByRank(playerStatus.weaponRank);
@@ -594,6 +606,8 @@ function updatePlayer(dt) {
     lastPlayerGridX = player.gridX;
     lastPlayerGridY = player.gridY;
 
+    saveGame(); 
+    
     // ★ 先にポータル判定
     checkPortal();
 
@@ -830,14 +844,12 @@ function tryOpenChest() {
 
 // ポータル処理（復活地点記録つき & HP0復活対応）
 async function checkPortal(forceRespawn = null) {
+  // if (justLoaded) {
+  //   justLoaded = false;
+  //   return;
+  // }
 
-  // ★ HP0 から呼ばれた場合は通常ガードを無視する
   if (!forceRespawn) {
-    if (blockPortalOneFrame) {
-      blockPortalOneFrame = false;
-      return;
-    }
-
     const portals = mapLoader.map.portal;
     if (!portals) return;
   }
@@ -888,7 +900,7 @@ if (hpRatio > HP_DOWN) {
 
       // ★ マップ読み込み
       await mapLoader.loadMap(p.to);
-
+eventFlags.mapId = p.to;
       // ★ NPC画像ロード（本丸）
       if (mapLoader.loadCharImages) {
         await mapLoader.loadCharImages();
@@ -901,9 +913,11 @@ if (hpRatio > HP_DOWN) {
 
       // ★ プレイヤー再生成
       player = makeMover(p.px, p.py, field_speed, "player");
-
+lastPlayerGridX = player.gridX;
+lastPlayerGridY = player.gridY;
       // ★ mapId は JSON の mapId を使う
-      eventFlags.mapId = mapLoader.map.mapId;
+      //eventFlags.mapId = mapLoader.map.mapId;
+eventFlags.mapId = p.to;
 
       // ★ NPC 再生成
       npcList = mapLoader.map.char
@@ -918,7 +932,9 @@ if (hpRatio > HP_DOWN) {
         });
 
       updateScrollOffset();
-      blockPortalOneFrame = true;
+      
+      saveGame();
+      
       gameState = "game";
       return;
     }
@@ -1368,7 +1384,7 @@ function updateUI() {
   document.getElementById("uiHeals").textContent = playerStatus.heals;
   document.getElementById("uiGold").textContent = playerStatus.gold;
 }
-
+/*
 // タイトル → ゲーム開始
 document.addEventListener("click", () => {
   if (gameState === "title") startGame();
@@ -1376,34 +1392,7 @@ document.addEventListener("click", () => {
 document.addEventListener("touchstart", () => {
   if (gameState === "title") startGame();
 });
-
-// セーブ
-function saveGame() {
-  const data = {
-    playerStatus,
-    eventFlags,
-    mapId: eventFlags.mapId,
-    playerPos: { x: player.gridX, y: player.gridY }
-  };
-
-  localStorage.setItem("PB_SAVE", JSON.stringify(data));
-  showBalloon("セーブしました！", npc);
-}
-
-// ロード
-function loadGame() {
-  const raw = localStorage.getItem("PB_SAVE");
-  if (!raw) return false;
-
-  const data = JSON.parse(raw);
-
-  playerStatus = data.playerStatus;
-  eventFlags = data.eventFlags;
-
-  updatePlayerImagesByRank(playerStatus.weaponRank);
-
-  return true;
-}
+*/
 
 // フィールド移動（通行判定）
 function startMove(obj, dx, dy, w, h, actors) {
@@ -1491,12 +1480,6 @@ function drawTitle() {
   ctx.font = "36px sans-serif";
   ctx.fillText("～ ジイシン 厄災の胎動 ～", canvas.width / 2, 300);
 
-  blink++;
-  if (Math.floor(blink / 30) % 2 === 0) {
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "28px sans-serif";
-    ctx.fillText("PRESS START", canvas.width / 2, 400);
-  }
 }
 
 function getNpcText(data) {
@@ -1529,4 +1512,153 @@ function getPlayTime() {
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
   return `${min}:${sec.toString().padStart(2, "0")}`;
+}
+
+
+
+
+
+
+
+
+// =====================================
+// セーブ機能
+// =====================================
+const SAVE_KEY = "PB_SAVE";
+function createSaveData() {
+
+  const flags = structuredClone(eventFlags);
+
+  // 一時データは保存しない
+  Object.keys(flags).forEach(key => {
+    if (key.startsWith("__")) {
+      delete flags[key];
+    }
+  });
+
+  return {
+    version: 1,
+
+    // 現在のマップIDは eventFlags から取得
+    mapId: eventFlags.mapId,
+
+    x: player.gridX,
+    y: player.gridY,
+
+    hp: playerStatus.hp,
+    gold: playerStatus.gold,
+    heals: playerStatus.heals,
+    bullets: playerStatus.bullets,
+
+    weaponRank: playerStatus.weaponRank,
+
+    elapsedSec: Math.floor(
+      (Date.now() - startTime) / 1000
+    ),
+
+    eventFlags: flags
+  };
+}
+
+function saveGame() {
+
+  const data = createSaveData();
+
+  console.log("SAVE", data);
+
+  localStorage.setItem(
+    SAVE_KEY,
+    JSON.stringify(data)
+  );
+}
+
+function hasSave() {
+  return localStorage.getItem(SAVE_KEY) !== null;
+}
+
+function deleteSave() {
+  localStorage.removeItem(SAVE_KEY);
+}
+
+
+async function loadGame() {
+
+  const raw = localStorage.getItem(SAVE_KEY);
+
+  if (!raw) {
+    return false;
+  }
+
+  const save = JSON.parse(raw);
+
+  eventFlags = save.eventFlags;
+  
+	startTime = Date.now() - (
+	(save.elapsedSec || 0) * 1000
+	);
+
+  await mapLoader.loadMap(save.mapId);
+
+  if (mapLoader.loadCharImages) {
+    await mapLoader.loadCharImages();
+  }
+
+  player = makeMover(
+    save.x,
+    save.y,
+    field_speed,
+    "player"
+  );
+  lastPlayerGridX = player.gridX;
+  lastPlayerGridY = player.gridY;
+  //justLoaded = true;
+
+  const w = weaponMaster[String(save.weaponRank)];
+
+  playerStatus.weaponRank = save.weaponRank;
+  playerStatus.weapon = { ...w };
+
+  playerStatus.maxHp = w.hp;
+  playerStatus.hp = Math.min(save.hp, w.hp);
+
+  playerStatus.gold = save.gold;
+  playerStatus.heals = save.heals;
+  playerStatus.bullets = save.bullets;
+
+  updatePlayerImagesByRank(save.weaponRank);
+
+  // 宝箱復元
+  if (mapLoader.map.chest) {
+    mapLoader.map.chest =
+      mapLoader.map.chest.filter(
+        c => !eventFlags[c.eventId]
+      );
+  }
+
+  // NPC再生成
+  npcList = mapLoader.map.char
+    .filter(c => {
+      if (c.require && !checkRequire(c.require)) return false;
+      if (c.eventId && eventFlags[c.eventId]) return false;
+      return true;
+    })
+    .map(c => ({
+      mover: makeMover(c.x, c.y, 0.22, "npc"),
+      data: c
+    }));
+
+  updateScrollOffset();
+  
+const hpRatio = playerStatus.hp / playerStatus.maxHp;
+const fill = document.getElementById("playerHpFill");
+
+fill.style.width = (hpRatio * 100) + "%";
+
+if (hpRatio > HP_DOWN) {
+  fill.style.background = "rgba(80,255,80,0.9)";
+} else {
+  fill.style.background = "rgba(255,80,80,0.9)";
+}
+  
+  return true;
 }

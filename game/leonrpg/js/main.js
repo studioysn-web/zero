@@ -5,6 +5,7 @@
 // ======================================================
 const DEBUG_MODE = false; // デバッグモード
 // ショップ関連の状態
+let preloadDone = false;
 let startTime = Date.now();
 let shopCursor = 0;
 let shopMessage = "";
@@ -1468,6 +1469,15 @@ function startMove(obj, dx, dy, w, h, actors) {
 let blink = 0;
 
 function drawTitle() {
+
+  // 初回だけ world を先読み
+  if (!preloadDone) {
+  preloadDone = true;
+  
+  const tmpLoader = new MapLoader(tileSize);
+  tmpLoader.loadMap("world");
+  }
+
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 

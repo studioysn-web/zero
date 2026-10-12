@@ -123,6 +123,24 @@
       "y": 2,
       "move": "stay",
       "talk": []
+    },
+    {
+      "id": 5,
+      "name": "204",
+      "x": 4,
+      "y": 11,
+      "move": "stay",
+      "talk": [
+        {
+          "require": { "name204": true },
+          "eventId":{"name204":false},
+          "text": "[テツヤ(tetsu8a)]\n誰かを笑わす為に生まれて来た。\n翻訳はmake you smile(笑顔)か、\nふむlaugh(笑い)より素敵じゃん。"
+        },
+        {
+          "eventId":{"name204":true},
+          "text": "[テツヤ(tetsu8a)]\ntetsu8aだ。\nここはnote村。\n色々迷ってるのか？\n人生もギターも、自分のテンポで\n刻んでいけばいい。"
+        }
+      ]
     }
   ],
   "chest": [

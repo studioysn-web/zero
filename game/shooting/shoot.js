@@ -2,33 +2,33 @@
 // ★★★ キャンバス取得 & 画像キャッシュ ★★★
 //////////////////////////////////////////////////////////////
 const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d", { alpha: false });
 
-// 画像キャッシュ
+// 画像キャッシュ（描画サイズに縮小済みのcanvasが入る）
 const IMAGES = {};
 
 //////////////////////////////////////////////////////////////
 // ★★★ 画像プリロード用リスト ★★★
 //////////////////////////////////////////////////////////////
 const imageList = [
-    "./img/battler01.png",
-    "./img/battler02.png",
-    "./img/beam.png",
-    "./img/beam02.png",
-    "./img/bossBeam01.png",
-    "./img/teki00.png",
-    "./img/tekiDeath01.png",
-    "./img/zikozu0.png",
-    "./img/zikozu1.png",
-    "./img/zikozu2.png",
-    "./img/haikei1.png",
-    "./img/haikei2.png",
-    "./img/haikei3.png",
-    "./img/haikei4.png",
-    "./img/haikei5.png",
-    "./img/haikei6.png",
-    "./img/start_scr.png",
-    "./img/rip.png"
+    "./img/battler01.WebP",
+    "./img/battler02.WebP",
+    "./img/beam.WebP",
+    "./img/beam02.WebP",
+    "./img/bossBeam01.WebP",
+    "./img/teki00.WebP",
+    "./img/tekiDeath01.WebP",
+    "./img/zikozu0.WebP",
+    "./img/zikozu1.WebP",
+    "./img/zikozu2.WebP",
+    "./img/haikei1.WebP",
+    "./img/haikei2.WebP",
+    "./img/haikei3.WebP",
+    "./img/haikei4.WebP",
+    "./img/haikei5.WebP",
+    "./img/haikei6.WebP",
+    "./img/start_scr.WebP",
+    "./img/rip.WebP"
 ];
 
 //////////////////////////////////////////////////////////////
@@ -51,23 +51,48 @@ function drawLoadingScreen(progress) {
 }
 
 //////////////////////////////////////////////////////////////
-// ★★★ 画像プリロード（キャッシュ対応） ★★★
+// ★★★ 画像プリロード（描画サイズに縮小して保存） ★★★
 //////////////////////////////////////////////////////////////
+// 画像パス → 実際に描画するサイズ [幅, 高さ]
+function getDrawSize(src) {
+    const s = src.toLowerCase();
+    if (s.includes("haikei") || s.includes("start_scr")) return [canvas.width, canvas.height];
+    if (s.includes("beam")) return [40, 50];
+    if (s.includes("teki")) return [80, 80];
+    return [100, 100]; // battler / zikozu / rip
+}
+
+function bake(img, w, h) {
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    c.getContext("2d").drawImage(img, 0, 0, w, h);
+    return c;
+}
+
 function preloadImages(list, callback) {
-    let loaded = 0;
+    let done = 0;
     const total = list.length;
+
+    const finish = () => {
+        done++;
+        drawLoadingScreen(done / total);
+        if (done === total) callback();
+    };
 
     list.forEach(src => {
         const img = new Image();
         img.onload = () => {
-            loaded++;
-            drawLoadingScreen(loaded / total);
-            if (loaded === total) callback();
+            const [w, h] = getDrawSize(src);
+            IMAGES[src] = bake(img, w, h);
+            finish();
+        };
+        // 1枚でも失敗すると永久にLOADINGのままになるのを防ぐ
+        img.onerror = () => {
+            console.warn("画像の読み込みに失敗:", src);
+            finish();
         };
         img.src = src;
-
-        // キャッシュに保存
-        IMAGES[src] = img;
     });
 }
 
@@ -88,6 +113,10 @@ let bossSpawnedThisStage = false;
 let gameLoopId = null;
 let gameStarted = false;
 
+// フレーム時間補正（60fps = 1.0）
+let lastTime = 0;
+let dt = 1;
+
 // 背景スムーズ切替用
 let currentBG = 1;
 let nextBG = 1;
@@ -99,7 +128,7 @@ const keys = {};
 // ★★★ タイトル画面 ★★★
 //////////////////////////////////////////////////////////////
 function drawTitleScreen() {
-    const img = IMAGES["./img/start_scr.png"];
+    const img = IMAGES["./img/start_scr.WebP"];
     if (!img) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -125,47 +154,54 @@ window.onload = () => {
             const btn = document.getElementById(dir);
 
             if (btn) {
-                btn.addEventListener("touchstart", () => {
+                btn.addEventListener("touchstart", (e) => {
+                    e.preventDefault();
                     keys[keyMap[dir]] = true;
-                });
-                btn.addEventListener("touchend", () => {
+                }, { passive: false });
+                const release = (e) => {
+                    e.preventDefault();
                     keys[keyMap[dir]] = false;
-                });
+                };
+                btn.addEventListener("touchend", release, { passive: false });
+                btn.addEventListener("touchcancel", release, { passive: false });
             }
         });
 
         const shootBtn = document.getElementById("shoot");
         if (shootBtn) {
-            shootBtn.addEventListener("touchstart", () => {
+            shootBtn.addEventListener("touchstart", (e) => {
+                e.preventDefault();
                 if (!player || isGameOver) return;
                 if (!player.shooting && beams.length < 3) {
                     shootBeam();
                 }
-            });
+            }, { passive: false });
         }
     });
 };
 
 //////////////////////////////////////////////////////////////
-// ★★★ ゲーム開始 ★★★
+// ★★★ ゲーム開始（通信を待たずに即開始） ★★★
 //////////////////////////////////////////////////////////////
-async function startGame() {
+function startGame() {
     const startBtn = document.getElementById("startButton");
     if (startBtn && startBtn.disabled) return;
 
+    // 二重にループが走らないようにする
     if (gameLoopId) cancelAnimationFrame(gameLoopId);
-
-    // ★ Supabase からハイスコアを取得して画面に反映
-    if (window.loadHighScore) {
-        const hs = await window.loadHighScore();
-        document.getElementById("hi-score").innerText = `HIGH SCORE: ${hs}`;
-    }
 
     resetGame();
     gameStarted = true;
+    lastTime = 0;
     gameLoop();
-}
 
+    // ★ Supabase のハイスコアは裏で取得（待たない）
+    if (window.loadHighScore) {
+        window.loadHighScore().then((hs) => {
+            window.highScore = Math.max(Number(hs) || 0, window.highScore || 0);
+        }).catch((e) => console.warn("ハイスコア取得失敗:", e));
+    }
+}
 
 //////////////////////////////////////////////////////////////
 // ★★★ リセット ★★★
@@ -176,7 +212,7 @@ function resetGame() {
         y: 200,
         width: 100,
         height: 100,
-        img: "./img/battler01.png",
+        img: "./img/battler01.WebP",
         shooting: false,
         alive: true,
     };
@@ -201,26 +237,28 @@ function resetGame() {
 }
 
 //////////////////////////////////////////////////////////////
-// ★★★ 背景スムーズ切替（キャッシュ使用） ★★★
+// ★★★ 背景スムーズ切替 ★★★
 //////////////////////////////////////////////////////////////
 function drawBackground() {
     const level = Math.floor(score / 1500) % 6 + 1;
     nextBG = level;
 
-    const bg1 = IMAGES[`./img/haikei${currentBG}.png`];
-    const bg2 = IMAGES[`./img/haikei${nextBG}.png`];
+    const bg1 = IMAGES[`./img/haikei${currentBG}.WebP`];
+    const bg2 = IMAGES[`./img/haikei${nextBG}.WebP`];
+
+    const bx = Math.round(backgroundX);
 
     if (bg1) {
-        ctx.drawImage(bg1, backgroundX, 0, canvas.width, canvas.height);
+        ctx.drawImage(bg1, bx, 0);
     }
     if (bg2) {
-        ctx.drawImage(bg2, backgroundX + canvas.width, 0, canvas.width, canvas.height);
+        ctx.drawImage(bg2, bx + canvas.width, 0);
     }
 
-    backgroundX -= 2;
+    backgroundX -= 2 * dt;
 
     if (backgroundX <= -canvas.width) {
-        backgroundX = 0;
+        backgroundX += canvas.width;
         currentBG = nextBG;
     }
 
@@ -263,8 +301,11 @@ function shootBeam() {
         y: player.y + player.height / 2
     });
 
-    player.img = "./img/battler02.png";
-    setTimeout(() => (player.img = "./img/battler01.png"), 100);
+    player.img = "./img/battler02.WebP";
+    setTimeout(() => {
+        // やられ画像を上書きしないようにする
+        if (player && player.img === "./img/battler02.WebP") player.img = "./img/battler01.WebP";
+    }, 100);
     setTimeout(() => (player.shooting = false), 300);
 }
 
@@ -273,18 +314,18 @@ function drawPlayer() {
     const img = IMAGES[player.img];
     if (!img) return;
 
-    ctx.drawImage(img, player.x, player.y, player.width, player.height);
+    ctx.drawImage(img, player.x, player.y);
 }
 
 function drawBeams() {
-    const beamImg = IMAGES["./img/beam.png"];
+    const beamImg = IMAGES["./img/beam.WebP"];
     if (!beamImg) return;
 
     for (let i = beams.length - 1; i >= 0; i--) {
         const beam = beams[i];
-        beam.x += 5;
+        beam.x += 5 * dt;
 
-        ctx.drawImage(beamImg, beam.x, beam.y, 40, 50);
+        ctx.drawImage(beamImg, Math.round(beam.x), Math.round(beam.y));
 
         if (beam.x > canvas.width) {
             beams.splice(i, 1);
@@ -303,9 +344,10 @@ function drawScore() {
     ctx.fillStyle = "#ec4abc";
     ctx.fillText(`SCORE: ${score}`, canvas.width / 2, 50);
 
-     if (score > window.highScore) {
+    if (score > (window.highScore || 0)) {
         window.highScore = score;
     }
+
     // ★ HIGH SCORE（その上に赤で派手に）
     if (window.highScore !== undefined) {
         ctx.lineWidth = 6;
@@ -327,7 +369,12 @@ function drawBossDefeatCount() {
 //////////////////////////////////////////////////////////////
 // ★★★ メインループ ★★★
 //////////////////////////////////////////////////////////////
-function gameLoop() {
+function gameLoop(t) {
+    if (t === undefined) t = performance.now();
+    // 60fps換算の経過フレーム数（最大3でクランプ。タブ復帰時の瞬間移動防止）
+    dt = lastTime ? Math.min((t - lastTime) / 16.667, 3) : 1;
+    lastTime = t;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawBackground();
@@ -341,8 +388,8 @@ function gameLoop() {
 
     if (!isGameOver) {
         if (player) {
-            if (keys["ArrowUp"] && player.y > 100) player.y -= 3;
-            if (keys["ArrowDown"] && player.y < canvas.height - player.height) player.y += 3;
+            if (keys["ArrowUp"] && player.y > 100) player.y -= 3 * dt;
+            if (keys["ArrowDown"] && player.y < canvas.height - player.height) player.y += 3 * dt;
         }
 
         updateEnemies();
@@ -352,14 +399,16 @@ function gameLoop() {
 
         gameLoopId = requestAnimationFrame(gameLoop);
     } else {
+        gameLoopId = null;
         displayGameOverOverlay();
     }
 }
+
 //////////////////////////////////////////////////////////////
 // ★★★ 雑魚出現（最大3体まで） ★★★
 //////////////////////////////////////////////////////////////
 function spawnEnemy() {
-    if (enemies.length < 3 && !isGameOver) {
+    if (gameStarted && enemies.length < 3 && !isGameOver) {
         enemyID++;
 
         enemies.push({
@@ -368,7 +417,7 @@ function spawnEnemy() {
             y: Math.random() * (canvas.height - 200) + 100,
             width: 80,
             height: 80,
-            img: "./img/teki00.png",
+            img: "./img/teki00.WebP",
             alive: true,
             movingUp: true,
             targetX: canvas.width - 150,
@@ -381,27 +430,27 @@ function spawnEnemy() {
 setInterval(spawnEnemy, 3000);
 
 //////////////////////////////////////////////////////////////
-// ★★★ 雑魚描画（キャッシュ使用） ★★★
+// ★★★ 雑魚描画 ★★★
 //////////////////////////////////////////////////////////////
 function drawEnemies() {
     enemies.forEach((enemy) => {
         const img = IMAGES[enemy.img];
         if (img) {
-            ctx.drawImage(img, enemy.x, enemy.y, enemy.width, enemy.height);
+            ctx.drawImage(img, Math.round(enemy.x), Math.round(enemy.y));
         }
 
         // 入場中
         if (enemy.x > enemy.targetX) {
-            enemy.x -= 3;
+            enemy.x -= 3 * dt;
             return;
         }
 
         // 上下移動
         if (enemy.movingUp) {
-            enemy.y -= 2;
+            enemy.y -= 2 * dt;
             if (enemy.y <= 100) enemy.movingUp = false;
         } else {
-            enemy.y += 2;
+            enemy.y += 2 * dt;
             if (enemy.y >= canvas.height - enemy.height) enemy.movingUp = true;
         }
     });
@@ -413,15 +462,15 @@ function drawEnemies() {
 function drawEnemyBeams() {
     for (let i = enemyBeams.length - 1; i >= 0; i--) {
         const beam = enemyBeams[i];
-        beam.x -= beam.speed || 5;
+        beam.x -= (beam.speed || 5) * dt;
 
         const key = beam.bossShot
-            ? "./img/bossBeam01.png"
-            : "./img/beam02.png";
+            ? "./img/bossBeam01.WebP"
+            : "./img/beam02.WebP";
 
         const img = IMAGES[key];
         if (img) {
-            ctx.drawImage(img, beam.x, beam.y, 40, 50);
+            ctx.drawImage(img, Math.round(beam.x), Math.round(beam.y));
         }
 
         if (beam.x < -100) {
@@ -435,7 +484,7 @@ function drawEnemyBeams() {
 //////////////////////////////////////////////////////////////
 function updateEnemies() {
     enemies.forEach((enemy) => {
-        if (enemy.alive && Math.random() < 0.01) {
+        if (enemy.alive && Math.random() < 0.01 * dt) {
             enemyBeams.push({
                 x: enemy.x,
                 y: enemy.y + enemy.height / 2,
@@ -461,7 +510,7 @@ function checkPlayerCollision() {
             beam.y < player.y + player.height - margin &&
             beam.y + 50 > player.y + margin
         ) {
-            player.img = "./img/rip.png";
+            player.img = "./img/rip.WebP";
             setTimeout(() => (isGameOver = true), 500);
             enemyBeams.splice(i, 1);
         }
@@ -484,7 +533,7 @@ function updateGameObjects() {
             if (checkCollision(beams[j], enemy) && enemy.alive) {
                 beams.splice(j, 1);
                 enemy.alive = false;
-                enemy.img = "./img/tekiDeath01.png";
+                enemy.img = "./img/tekiDeath01.WebP";
                 score += 150;
 
                 setTimeout(() => {
@@ -510,7 +559,7 @@ function checkCollision(beam, obj) {
 }
 
 //////////////////////////////////////////////////////////////
-// ★★★ 大ボス（ステージ6限定） ★★★
+// ★★★ 大ボス ★★★
 //////////////////////////////////////////////////////////////
 function spawnBoss() {
     bossActive = true;
@@ -523,22 +572,22 @@ function spawnBoss() {
         height: 100,
         alive: true,
         movingUp: true,
-        img: "./img/zikozu0.png",
-        deathImg: "./img/zikozu2.png",
+        img: "./img/zikozu0.WebP",
+        deathImg: "./img/zikozu2.WebP",
         hitEffect: false,
         remove: false
     };
 }
 
 //////////////////////////////////////////////////////////////
-// ★★★ ボス描画（キャッシュ使用） ★★★
+// ★★★ ボス描画 ★★★
 //////////////////////////////////////////////////////////////
 function drawBoss() {
     if (!bossActive || !boss) return;
 
     const img = IMAGES[boss.img];
     if (img) {
-        ctx.drawImage(img, boss.x, boss.y, boss.width, boss.height);
+        ctx.drawImage(img, Math.round(boss.x), Math.round(boss.y));
     }
 }
 
@@ -551,21 +600,21 @@ function updateBoss() {
 
     // 入場中
     if (boss.x > canvas.width - 200) {
-        boss.x -= 2;
+        boss.x -= 2 * dt;
         return;
     }
 
     // 上下移動
     if (boss.movingUp) {
-        boss.y -= 2;
+        boss.y -= 2 * dt;
         if (boss.y <= 100) boss.movingUp = false;
     } else {
-        boss.y += 2;
+        boss.y += 2 * dt;
         if (boss.y >= canvas.height - boss.height) boss.movingUp = true;
     }
 
     // ボス攻撃
-    if (Math.random() < 0.02) {
+    if (Math.random() < 0.02 * dt) {
         enemyBeams.push({
             x: boss.x - 20,
             y: boss.y + boss.height / 2 - 10,
@@ -582,12 +631,12 @@ function updateBoss() {
 
             // 赤化エフェクト
             boss.hitEffect = true;
-            boss.img = "./img/zikozu1.png";
+            boss.img = "./img/zikozu1.WebP";
 
             setTimeout(() => {
                 if (boss && boss.alive) {
                     boss.hitEffect = false;
-                    boss.img = "./img/zikozu0.png";
+                    boss.img = "./img/zikozu0.WebP";
                 }
             }, 100);
 
@@ -608,43 +657,11 @@ function updateBoss() {
         }
     }
 }
+
 //////////////////////////////////////////////////////////////
-// ★★★ ハイスコア保存・読み込み ★★★
+// ★★★ ゲームオーバー表示（通信待ちなし） ★★★
 //////////////////////////////////////////////////////////////
-// function saveHighScore(finalScore) {
-//     const currentHighScore = Number(localStorage.getItem("highScore") || 0);
-
-//     if (finalScore > currentHighScore) {
-//         localStorage.setItem("highScore", finalScore);
-//     }
-// }
-
-// function loadHighScore() {
-//     return {
-//         score: Number(localStorage.getItem("highScore") || 0)
-//     };
-// }
-async function startGame() {
-    const startBtn = document.getElementById("startButton");
-    if (startBtn && startBtn.disabled) return;
-
-    if (gameLoopId) cancelAnimationFrame(gameLoopId);
-
-    // ★ Supabase のハイスコアを HTML 側から受け取る
-    let hs = 0;
-    if (window.loadHighScore) {
-        hs = await window.loadHighScore();
-        window.highScore = hs;
-    }
-   
-    resetGame();
-    gameStarted = true;
-    gameLoop();
-}
-
-
-async function displayGameOverOverlay() {
-
+function displayGameOverOverlay() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -668,28 +685,19 @@ async function displayGameOverOverlay() {
 
     ctx.fillText(`TOTAL: ${finalScore}`, canvas.width / 2, canvas.height / 2 + 60);
 
-    // ★ Supabase のハイスコア取得
-    let highScore = 0;
-    if (window.loadHighScore) {
-        highScore = await window.loadHighScore();
-    }
-
+    // ★ 取得済みのハイスコアをそのまま表示（通信しない）
     ctx.fillStyle = "yellow";
-    ctx.fillText(`HIGH SCORE: ${highScore}`, canvas.width / 2, canvas.height / 2 + 120);
+    ctx.fillText(`HIGH SCORE: ${window.highScore || 0}`, canvas.width / 2, canvas.height / 2 + 120);
 
     gameStarted = false;
 
     const panel = document.getElementById("scoreEntry");
-    panel.style.display = "block";
-    panel.dataset.score = finalScore;
+    if (panel) {
+        panel.style.display = "block";
+        panel.dataset.score = finalScore;
+    }
 
     // ★ 結果欄をクリア
-    document.getElementById("scoreEntryResult").innerText = "";
-
+    const result = document.getElementById("scoreEntryResult");
+    if (result) result.innerText = "";
 }
-
-
-//////////////////////////////////////////////////////////////
-// ★★★ スマホ操作（タッチ） ★★★
-// ※ window.onload 内で設定済みなので追加なし
-//////////////////////////////////////////////////////////////
